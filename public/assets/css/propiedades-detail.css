@@ -1,0 +1,111 @@
+/* public/assets/css/propiedades.css */
+
+/* --- Estilos para la Vista de Detalle de Propiedades --- */
+
+/* Contenedor principal de la tarjeta de detalle */
+.property-detail-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px; /* Padding estándar para el header de la card */
+    background-color: #fcfcfc; /* Fondo ligeramente diferente */
+    border-bottom: 1px solid #e3e6f0; /* Borde inferior */
+    border-radius: 8px 8px 0 0; /* Bordes redondeados superiores */
+}
+
+/* Título dentro del header de la card de detalle */
+.property-detail-card .card-header h6.card-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-dark); /* Color de texto oscuro */
+    flex-grow: 1; /* Permite que el título ocupe el espacio */
+}
+
+/* Badge de estatus en el header de la card */
+.detail-status-badge {
+    margin-left: 20px; /* Margen para separar del título */
+    font-size: 0.85em; /* Tamaño ligeramente más pequeño */
+    padding: 6px 12px;
+    border-radius: 15px; /* Más redondeado */
+    text-transform: uppercase;
+    font-weight: 700;
+    white-space: nowrap; /* Evita que el texto se rompa */
+}
+
+/* Estilos de los status-badge (se reutilizan de main.css o se definen aquí si es propiedades.css el que los usa) */
+/* Asegúrate que estos colores sean consistentes con los de tu listado */
+.status-badge.status-apartada { background-color: #ffc107; color: #333; }
+.status-badge.status-vendida { background-color: #28a745; color: #fff; }
+.status-badge.status-disponible { background-color: #007bff; color: #fff; }
+.status-badge.status-en-proceso-cambio { background-color: #6f42c1; color: #fff; }
+.status-badge.status-retirada { background-color: #6c757d; color: #fff; }
+
+
+/* --- Estilos para las Secciones de Detalle --- */
+.detail-section {
+    margin-bottom: 25px; /* Espacio entre secciones */
+    padding-bottom: 20px; /* Padding para la línea divisoria */
+    border-bottom: 1px dashed #e9ecef; /* Línea punteada para separar secciones sutilmente */
+}
+
+.detail-section:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none; /* La última sección no lleva borde */
+}
+
+.section-title {
+    font-size: 1.25rem;
+    color: var(--color-primary); /* Color primario para el título de la sección */
+    font-weight: 600;
+    margin-bottom: 15px; /* Margen inferior del título de sección */
+    display: flex;
+    align-items: center;
+}
+
+.section-icon {
+    margin-right: 10px;
+    color: var(--color-secondary); /* Color secundario para el icono de la sección */
+    font-size: 1.15rem; /* Tamaño del icono */
+}
+
+/* --- Estilos para el Grid de Detalles --- */
+.detail-grid {
+    display: grid;
+    /* 2 columnas en pantallas medias, autoajustable a 1 en pequeñas */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px 25px; /* Espacio vertical y horizontal entre los ítems */
+}
+
+/* Ítems de detalle individuales */
+.detail-item {
+    display: flex;
+    flex-direction: column; /* Etiqueta arriba, valor abajo */
+    padding: 0; /* Aseguramos que no haya padding extra que sume espacio */
+}
+
+/* Ítems que ocupan todo el ancho en el grid */
+.detail-item.full-width {
+    grid-column: 1 / -1; /* Ocupa todas las columnas disponibles */
+    /* Eliminar borde y margen si no se desea: */
+    /* border-bottom: 1px dotted #eee; */
+    /* padding-bottom: 10px; */
+    /* margin-bottom: 10px; */
+}
+
+/* Estilos de etiqueta y valor */
+.detail-label {
+    font-size: 0.85rem;
+    color: var(--color-secondary); /* Gris para la etiqueta */
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.detail-value {
+    font-size: 1rem;
+    color: var(--color-text-dark); /* Texto oscuro para el valor */
+    word-wrap: break-word; /* Rompe palabras largas
+    para que se vean en varias lineas */
+}

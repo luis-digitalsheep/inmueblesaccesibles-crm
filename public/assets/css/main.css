@@ -1,0 +1,592 @@
+:root {
+  --color-primary: #4e73df;
+  --color-secondary: #858796;
+  --color-bg-light: #f8f9fc;
+  --color-bg-dark: #19304a;
+  --color-sidebar-link: #adb5bd;
+  --color-sidebar-link-hover: #ffffff;
+  --color-text-dark: #343a40;
+  --shadow-light: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-dark);
+  background-color: var(--color-bg-light);
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-primary);
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+ul {
+  list-style: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 1rem;
+  color: var(--color-text-dark);
+  font-weight: 600;
+}
+
+select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+/* --- Layout Principal --- */
+.page-wrapper {
+  display: flex;
+  height: 100vh;
+  min-height: 100vh;
+}
+
+/* --- Contenido Principal (Main Content) --- */
+.content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* --- Topbar (Barra Superior) --- */
+.topbar {
+  background-color: #fff;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: var(--shadow-light);
+  flex-shrink: 0;
+}
+
+.topbar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--color-secondary);
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: #f0f2f5;
+}
+
+/* Dropdown de Usuario */
+.user-dropdown {
+  position: relative;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-dark);
+  text-decoration: none;
+}
+
+.user-info:hover {
+  text-decoration: none;
+}
+
+.user-name {
+  margin-right: 10px;
+  font-weight: 500;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-primary);
+}
+
+.user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: var(--shadow-light);
+  min-width: 180px;
+  padding: 10px 0;
+  z-index: 1000;
+  display: none;
+  /* Se mostrará con JavaScript */
+}
+
+.user-dropdown:hover .dropdown-menu,
+.user-dropdown.active .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 10px 15px;
+  color: var(--color-text-dark);
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f2f5;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 5px 0;
+}
+
+/* --- Contenido de la Página --- */
+.page-content {
+  flex-grow: 1;
+  padding: 30px;
+  overflow-y: visible;
+  overflow-x: hidden;
+}
+
+.container-fluid {
+  width: 100%;
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-header-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.page-title-group {
+  flex-grow: 1;
+}
+
+.page-title {
+  font-size: 2.2rem;
+  color: var(--color-text-dark);
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.page-description {
+  font-size: 1rem;
+  color: var(--color-secondary);
+  margin-bottom: 0;
+}
+
+.page-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .page-header-area {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-actions {
+    margin-top: 15px;
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* --- Footer Principal --- */
+.main-footer {
+  background-color: #fff;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+  box-shadow: var(--shadow-light);
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+/* --- Clases de utilidad (ej. para botones) --- */
+.btn {
+  display: inline-block;
+  padding: 10px 15px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+a.btn {
+  text-decoration: none;
+}
+
+button.btn {
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary);
+}
+
+.btn-primary:hover {
+  background-color: #3b5cb0;
+  border-color: #3b5cb0;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+/* Estilos para títulos y alertas dentro del contenido */
+
+
+.h3.mb-0.text-gray-800 {
+  font-size: 1.75rem;
+  color: var(--color-text-dark);
+}
+
+.d-sm-flex {
+  /* Para centrar títulos con botones */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: var(--shadow-light);
+}
+
+.card-header {
+  padding: 15px 20px;
+  background-color: #fcfcfc;
+  border-bottom: 1px solid #e3e6f0;
+  border-radius: 8px 8px 0 0;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+}
+
+.card-header h6 {
+  margin: 0;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+}
+
+.alert-info {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.alert-container {
+  margin-bottom: 20px;
+  min-height: 20px;
+}
+
+.alert.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #e3e6f0;
+  white-space: nowrap;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #e3e6f0;
+  font-weight: bold;
+  text-align: left;
+}
+
+.table tbody+tbody {
+  border-top: 2px solid #e3e6f0;
+}
+
+.table td.column-direccion {
+  white-space: normal;
+  min-width: 200px;
+}
+
+
+
+
+
+
+
+
+
+
+.table-responsive {
+  overflow-x: auto;
+  /* Permite desplazamiento horizontal si el contenido es muy ancho */
+  -webkit-overflow-scrolling: touch;
+  /* Mejora el desplazamiento en dispositivos táctiles */
+}
+
+
+
+
+
+
+
+
+/* --- Estilos para las pastillas de estatus en las tablas (status-badge) --- */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  /* Redondeado como pastilla */
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* Evita que el texto se rompa */
+  color: #fff;
+  /* Texto blanco por defecto */
+}
+
+/* Definición de colores para cada estatus de disponibilidad (¡Ajusta los colores a tu gusto!) */
+.status-apartada {
+  background-color: #ffc107;
+  /* Amarillo/Naranja, para indicar "en proceso" */
+  color: #333;
+  /* Texto oscuro para contraste */
+}
+
+.status-vendida {
+  background-color: #28a745;
+  /* Verde, para indicar "completada" */
+}
+
+.status-disponible {
+  background-color: #007bff;
+  /* Azul, para indicar "activo" */
+}
+
+.status-en-proceso-cambio {
+  background-color: #6f42c1;
+  /* Púrpura, para indicar otro proceso */
+}
+
+.status-retirada {
+  background-color: #6c757d;
+  /* Gris, para indicar "fuera de mercado" */
+}
+
+
+/* --- Estilos para el formulario de filtros --- */
+.filter-card {
+  margin-bottom: 25px;
+  /* Espacio debajo de la tarjeta de filtros */
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  /* Columnas responsivas */
+  gap: 20px;
+  /* Espacio entre los grupos de filtros */
+  margin-bottom: 25px;
+}
+
+.filters-actions {
+  display: flex;
+  justify-content: flex-end;
+  /* Alinea los botones a la derecha */
+  gap: 10px;
+  /* Espacio entre los botones */
+}
+
+/* Ajustes para form-group y form-select si ya los tienes */
+.form-group {
+  margin-bottom: 0;
+  /* Elimina el margen inferior si usas grid gap */
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--color-text-dark);
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+
+
+.pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+    padding: 10px 0;
+    border-top: 1px solid #e3e6f0;
+    background-color: #fdfdfd;
+    border-radius: 0 0 8px 8px;
+}
+
+.pagination-container .btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.pagination-container .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--color-bg-light);
+    border-color: #dee2e6;
+    color: var(--color-secondary);
+}
+
+.pagination-container .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.pagination-container .btn-secondary:hover:not(:disabled) {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.pagination-container #paginationInfo {
+    font-size: 0.95rem;
+    color: var(--color-text-dark);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Si tu paginador va dentro del card-body y quieres que el footer del card sea el paginador: */
+/* Asegúrate de que .card-body no tenga padding-bottom que lo oculte */
+.card-footer-pagination {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e3e6f0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    border-radius: 0 0 8px 8px;
+}
+
+
+/* Si el .pagination-container es el elemento padre directo de los botones: */
+/* Asegúrate de que el contenedor del paginador tenga el mismo padding que el card-body si va debajo de la tabla pero fuera del body */
+/* En tu list.php lo tienes dentro del card-body, así que el .pagination-container debe ser el que tiene el padding. */
+
+.actions-column {
+    display: flex;
+    gap: 10px;
+}

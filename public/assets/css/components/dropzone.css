@@ -1,0 +1,43 @@
+.custom-dropzone {
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 20px;
+  border-radius: 8px;
+  background-color: var(--color-bg-dark);
+  color: #ccc;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  min-height: 200px;
+  font-family: 'Arial', sans-serif;
+  position: relative;
+}
+
+.custom-dropzone:hover {
+  background-color: #284f7b;
+}
+
+#dropzoneForm.dropzone .dz-error-mark, #dropzoneForm.dropzone .dz-success-mark {
+  cursor: pointer !important;
+  pointer-events: all;
+}
+
+
+#dropzoneForm.dropzone .dz-error-mark svg, #dropzoneForm.dropzone .dz-success-mark svg {
+  cursor: pointer;
+  pointer-events: all;
+
+  color: #ff0000;
+  transform: scale(1.2);
+}
+
+#dropzoneForm.dropzone .dz-error-mark, svg:hover, #dropzoneForm.dropzone .dz-success-mark svg:hover {
+  cursor: pointer;
+  pointer-events: all;
+
+  color: #ff0000;
+  transform: scale(1.2);
+}
