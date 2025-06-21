@@ -12,6 +12,7 @@
 </div>
 <?php include BASE_PATH . '/app/Views/components/modal_template.php'; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 </body>
 
 </html>

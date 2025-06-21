@@ -65,11 +65,15 @@ document.addEventListener("DOMContentLoaded", function () {
 	const activeSubmenuItem = document.querySelector(
 		".submenu-content li.active"
 	);
+
 	if (activeSubmenuItem) {
 		const parentSubmenu = activeSubmenuItem.closest(".nav-item.has-submenu");
+
 		if (parentSubmenu) {
 			parentSubmenu.classList.add("open");
+			
 			const submenuContent = parentSubmenu.querySelector(".submenu-content");
+
 			if (submenuContent) {
 				submenuContent.style.maxHeight = submenuContent.scrollHeight + "px";
 			}

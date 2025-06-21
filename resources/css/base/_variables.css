@@ -1,0 +1,13 @@
+:root {
+  --color-primary: #4e73df;
+  --color-secondary: #858796;
+  --color-bg-light: #f8f9fc;
+  --color-bg-dark: #19304a;
+  --color-sidebar-link: #adb5bd;
+  --color-sidebar-link-hover: #ffffff;
+  --color-text-dark: #343a40;
+  --color-border: #e3e6f0;
+  --shadow-light: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  --font-family-base: 'Poppins', sans-serif;
+  --border-radius-default: 0.35rem;
+}

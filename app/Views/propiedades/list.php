@@ -44,6 +44,7 @@ $currentFilters = $_GET ?? [];
   <div class="card-header">
     <h6 class="card-title">Filtros de Propiedades</h6>
   </div>
+  
   <div class="card-body">
     <form id="propertyFiltersForm" method="GET" action="/propiedades">
       <div class="filters-grid">
@@ -157,4 +158,4 @@ $currentFilters = $_GET ?? [];
   </div>
 </div>
 
-<script type="module" src="/assets/js/propiedades.js"></script>
+<script type="module" src="/assets/js/pages/propiedades/list.js"></script>

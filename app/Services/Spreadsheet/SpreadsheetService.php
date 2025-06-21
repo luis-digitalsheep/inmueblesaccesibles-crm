@@ -8,7 +8,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 
-class SpreadsheetService {
+class SpreadsheetService
+{
   /**
    * Lee datos de un archivo y los devuelve como un array.
    *
@@ -18,18 +19,21 @@ class SpreadsheetService {
    * @return array Array de filas, donde cada fila es un array de celdas.
    * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
    */
-  public function readSpreadsheet(string $filePath, int $sheetIndex = 0, bool $skipHeader = true): array {
+  public function readSpreadsheet(string $filePath, int $sheetIndex = 0, int $rowsToSkip = 0, bool $returnCellRef = false): array
+  {
     $spreadsheet = IOFactory::load($filePath);
     $sheet = $spreadsheet->getSheet($sheetIndex);
 
     // Convertir la hoja a un array, omitiendo filas vacías al final
     // y obteniendo los valores calculados de las fórmulas.
-    $dataArray = $sheet->toArray(null, true, true, true);
+    $dataArray = $sheet->toArray(null, true, true, true, $returnCellRef);
 
-    if ($skipHeader && !empty($dataArray)) {
-      array_shift($dataArray);
+    if ($rowsToSkip > 0 && !empty($dataArray)) {
+      for ($i = 0; $i < $rowsToSkip && !empty($dataArray); $i++) {
+        array_shift($dataArray);
+      }
     }
-
+    
     return $dataArray;
   }
 
@@ -40,7 +44,8 @@ class SpreadsheetService {
    * @param string $tituloHoja Título de la hoja.
    * @return Spreadsheet El objeto Spreadsheet poblado.
    */
-  public function generateSpreadsheet(array $datos, array $cabeceras = [], string $tituloHoja = 'Hoja1'): Spreadsheet {
+  public function generateSpreadsheet(array $datos, array $cabeceras = [], string $tituloHoja = 'Hoja1'): Spreadsheet
+  {
     $spreadsheet = new Spreadsheet();
 
     $sheet = $spreadsheet->getActiveSheet();
@@ -92,7 +97,8 @@ class SpreadsheetService {
    * @param Spreadsheet $spreadsheet El objeto Spreadsheet a enviar.
    * @param string $nombreArchivo El nombre del archivo para la descarga.
    */
-  public function downloadSpreadsheet(Spreadsheet $spreadsheet, string $nombreArchivo = 'reporte.xlsx'): void {
+  public function downloadSpreadsheet(Spreadsheet $spreadsheet, string $nombreArchivo = 'reporte.xlsx'): void
+  {
     if (ob_get_level()) {
       ob_end_clean();
     }

@@ -1,0 +1,173 @@
+/* --- Componente: Stepper Horizontal (Para Estatus Global) --- */
+.horizontal-stepper-wrapper {
+    width: 100%;
+}
+
+.horizontal-stepper-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.h-stepper-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+/* El círculo del paso */
+.h-stepper-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border, #e3e6f0);
+    background-color: #fff;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+/* La etiqueta de texto debajo del círculo */
+.h-stepper-label {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-secondary, #858796);
+    transition: color 0.3s ease;
+}
+
+/* La línea que conecta los pasos */
+.h-stepper-item:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    right: 50%;
+    top: 15px;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-border, #e3e6f0);
+    z-index: 1;
+}
+
+/* -- Estados del Stepper Horizontal -- */
+
+/* Completado */
+.h-stepper-item.completed .h-stepper-marker {
+    border-color: #1cc88a;
+    background-color: #1cc88a;
+    color: #fff;
+}
+
+.h-stepper-item.completed .h-stepper-marker::after {
+    content: '\f00c';
+    /* Checkmark de Font Awesome */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
+.h-stepper-item.completed .h-stepper-label {
+    color: var(--color-text-dark);
+}
+
+.h-stepper-item.completed:not(:first-child)::before {
+    background-color: #1cc88a;
+    /* Línea de conexión completada */
+}
+
+/* Activo */
+.h-stepper-item.active .h-stepper-marker {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: #fff;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(78, 115, 223, 0.5);
+}
+
+.h-stepper-item.active .h-stepper-label {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* La caja de acción que aparece debajo del stepper */
+.action-box {
+    background-color: #f8f9fc;
+    border: 1px solid var(--color-border, #e3e6f0);
+    padding: 1.5rem;
+    border-radius: 0.35rem;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.action-box p {
+    margin-bottom: 1rem;
+}
+
+
+/* --- Componente: Timeline de Seguimiento --- */
+
+.timeline-container {
+    max-height: 500px;
+    overflow-y: auto;
+    position: relative;
+    padding: 10px 15px 10px 55px;
+}
+
+.timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 25px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background-color: var(--color-border, #e3e6f0);
+    z-index: 0;
+}
+
+.timeline-item {
+    display: flex;
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.timeline-item .timeline-icon {
+    position: absolute;
+    left: -40px;
+    top: 0;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background-color: var(--color-secondary, #858796);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-item .timeline-content {
+    margin-left: 0;
+    padding: 10px 15px;
+    background-color: var(--color-bg-light, #f8f9fc);
+    border-radius: 0.35rem;
+    width: 100%;
+}
+
+.timeline-date {
+    font-size: 0.8em;
+    color: var(--color-secondary, #858796);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.timeline-text {
+    margin: 0;
+    word-break: break-word;
+}

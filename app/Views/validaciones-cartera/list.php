@@ -4,10 +4,13 @@ $pageDescription = $pageDescription ?? 'Listado de propiedades pendientes de val
 
 $sucursales = $sucursales ?? [];
 $administradoras = $administradoras ?? [];
-$estados = $estados ?? [];
-$municipios = $municipios ?? [];
+$carteras = $carteras ?? [];
 
 $currentFilters = $_GET ?? [];
+
+$canValidate = $canValidate ?? false;
+
+// $estatus = ['Pendiente', 'Validado', 'Rechazado'];
 
 ?>
 
@@ -30,7 +33,7 @@ $currentFilters = $_GET ?? [];
         <div class="form-group">
           <label for="filter_sucursal" class="form-label">Sucursal:</label>
           <select id="filter_sucursal" name="sucursal" class="form-select">
-            <option value="">Todas</option>
+            <option value="" selected>Todas</option>
             <?php foreach ($sucursales as $sucursal): ?>
               <option value="<?php echo htmlspecialchars($sucursal['id']); ?>"
                 <?php echo (isset($currentFilters['sucursal']) && $currentFilters['sucursal'] == $sucursal['id']) ? 'selected' : ''; ?>>
@@ -43,13 +46,36 @@ $currentFilters = $_GET ?? [];
         <div class="form-group">
           <label for="filter_administradora" class="form-label">Administradora:</label>
           <select id="filter_administradora" name="administradora" class="form-select">
-            <option value="">Todas</option>
+            <option value="" selected>Todas</option>
             <?php foreach ($administradoras as $administradora): ?>
               <option value="<?php echo htmlspecialchars($administradora['id']); ?>"
                 <?php echo (isset($currentFilters['administradora']) && $currentFilters['administradora'] == $administradora['id']) ? 'selected' : ''; ?>>
                 <?php echo htmlspecialchars($administradora['nombre']); ?>
               </option>
             <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="filter_cartera" class="form-label">Carteras:</label>
+          <select id="filter_cartera" name="cartera" class="form-select">
+            <option value="" selected>Todas</option>
+            <?php foreach ($carteras as $cartera): ?>
+              <option value="<?php echo htmlspecialchars($cartera['id']); ?>"
+                <?php echo (isset($currentFilters['cartera']) && $currentFilters['cartera'] == $cartera['id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($cartera['codigo']); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="filter_estatus" class="form-label">Estatus:</label>
+          <select id="filter_estatus" name="estatus" class="form-select">
+            <option value="">Todos</option>
+            <option value="Pendiente" selected>Pendiente</option>
+            <option value="Validado">Validado</option>
+            <option value="Rechazado">Rechazado</option>
           </select>
         </div>
 
@@ -60,7 +86,7 @@ $currentFilters = $_GET ?? [];
 
       <div class="filters-actions">
         <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
-        <a href="/propiedades" class="btn btn-secondary">Limpiar Filtros</a>
+        <a href="/validaciones-cartera" class="btn btn-secondary">Limpiar Filtros</a>
       </div>
     </form>
   </div>
@@ -82,6 +108,7 @@ $currentFilters = $_GET ?? [];
             <th>Estado</th>
             <th>Municipio</th>
             <th>Precio Lista</th>
+            <th>Estatus</th>
             <th>Sucursal</th>
             <th>Administradora</th>
             <th>Acciones</th>

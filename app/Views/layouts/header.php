@@ -12,15 +12,23 @@
       <script src="https://kit.fontawesome.com/dbec4d7656.js" crossorigin="anonymous"></script>
       <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 
+      <!-- Fonts -->
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
       <!-- Librerias CSS -->
       <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+
       <!-- Estilos CSS -->
-      <link href="/assets/css/main.css" rel="stylesheet">
+      <!-- <link href="/assets/css/main.css" rel="stylesheet">
       <link href="/assets/css/sidebar.css" rel="stylesheet">
       <link href="/assets/css/components/modal.css" rel="stylesheet">
-      <link href="/assets/css/components/dropzone.css" rel="stylesheet">
+      <link href="/assets/css/components/dropzone.css" rel="stylesheet"> -->
       <!-- <style src="/assets/css/propiedades-detail.css" type="text/css"></style> -->
+      <link rel="stylesheet" href="/assets/css/main.css">
 
       <script type="module" src="/assets/js/utils/modal.js"></script>
       <script type="module" src="/assets/js/utils/alerts.js"></script>
@@ -150,7 +158,7 @@
             <nav class="topbar-nav">
               <div class="topbar-left">
                 <button class="sidebar-toggle-btn" aria-label="Toggle Sidebar">
-                  <i class="icon icon-menu"></i>
+                  <i class="fa-solid fa-bars"></i>
                 </button>
               </div>
               <div class="topbar-right">

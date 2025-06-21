@@ -1,80 +1,86 @@
-export const Modal = {
-	_modalElement: null, // div principal del modal (#appModal)
-	_modalTitleElement: null, // Título del modal (.app-modal-title)
-	_modalBodyElement: null, // Contenido del modal (.app-modal-body)
-	_modalFooterElement: null, // Pie del modal (.app-modal-footer)
-	_modalCloseBtn: null, // Botón de cerrar (.app-modal-close-btn)
-	_modalOverlay: null, // Overlay del modal (.app-modal-overlay)
-	_activeConfirmCallback: null, // Callback para el botón de confirmar
-	_activeCancelCallback: null, // Callback para el botón de cancelar
-	_activeCloseCallback: null, // Callback para cerrar con X, overlay o Escape
+class ModalManager {
+	constructor() {
+		this._modalElement = null;
+		this._modalTitleElement = null;
+		this._modalBodyElement = null;
+		this._modalFooterElement = null;
+		this._confirmBtn = null;
+		this._cancelBtn = null;
+		this._modalCloseBtn = null;
+		this._modalOverlay = null;
 
+		this._activeConfirmCallback = null;
+		this._activeCancelCallback = null;
+		this._activeCloseCallback = null;
+	}
+
+	/**
+	 * Inicializa el componente del modal. Busca los elementos del DOM y enlaza los eventos.
+	 * Debe ser llamado cuando el DOM esté completamente cargado.
+	 */
 	init() {
 		this._modalElement = document.getElementById("appModal");
 
 		if (!this._modalElement) {
-			console.error(
-				"Error: No se encontró el elemento #appModal. Asegúrate de incluir modal_template.php."
-			);
+			console.error("Error: No se encontró el elemento #appModal. Asegúrate de que el template del modal esté incluido en la página.");
 			return;
 		}
 
-		this._modalTitleElement =
-			this._modalElement.querySelector(".app-modal-title");
-		this._modalBodyElement =
-			this._modalElement.querySelector(".app-modal-body");
-		this._modalFooterElement =
-			this._modalElement.querySelector(".app-modal-footer");
-		this._modalCloseBtn = this._modalElement.querySelector(
-			".app-modal-close-btn"
-		);
+		this._modalTitleElement = this._modalElement.querySelector(".app-modal-title");
+		this._modalBodyElement = this._modalElement.querySelector(".app-modal-body");
+		this._modalFooterElement = this._modalElement.querySelector(".app-modal-footer");
+		this._confirmBtn = this._modalElement.querySelector(".app-modal-confirm-btn");
+		this._cancelBtn = this._modalElement.querySelector(".app-modal-cancel-btn");
+		this._modalCloseBtn = this._modalElement.querySelector(".app-modal-close-btn");
 		this._modalOverlay = this._modalElement.querySelector(".app-modal-overlay");
 
-		if (this._modalCloseBtn) {
-			this._modalCloseBtn.addEventListener("click", () => this.hide());
-		}
-
-		if (this._modalOverlay) {
-			this._modalOverlay.addEventListener("click", () => this.hide());
-		}
-
-		document.addEventListener("keydown", this._handleKeydown);
-	},
-
-	// Manejador de teclado para cerrar con Escape
-	_handleKeydown: (e) => {
-		if (
-			e.key === "Escape" &&
-			Modal._modalElement &&
-			Modal._modalElement.classList.contains("is-active")
-		) {
-			Modal.hide();
-		}
-	},
+		this._bindEvents();
+	}
 
 	/**
-	 * Muestra el modal con el contenido HTML especificado.
+	 * Enlaza los eventos permanentes del modal.
+	 * @private
+	 */
+	_bindEvents() {
+		this._modalCloseBtn?.addEventListener("click", () => this.hide());
+		this._modalOverlay?.addEventListener("click", () => this.hide());
+
+		document.addEventListener("keydown", this._handleKeydown.bind(this));
+	}
+
+	/**
+	 * Maneja el evento de presionar una tecla (para cerrar con 'Escape').
+	 * @param {KeyboardEvent} e - El evento del teclado.
+	 * @private
+	 */
+	_handleKeydown(e) {
+		if (e.key === "Escape" && this._modalElement?.classList.contains("is-active")) {
+			this.hide();
+		}
+	}
+
+	/**
+	 * Muestra el modal con el contenido y opciones especificadas.
 	 * @param {string} title Título del modal.
-	 * @param {string} contentHtml Contenido HTML como string a inyectar en el body del modal.
-	 * @param {object} [options={}] Opciones: { size: 'sm'|'lg'|'xl', showFooter: boolean, onConfirm: function, onCancel: function, onClose: function, confirmBtnText: string, cancelBtnText: string, onContentReady: function }
+	 * @param {string} contentHtml Contenido HTML a inyectar.
+	 * @param {object} [options={}] Opciones de configuración.
 	 */
 	show(title, contentHtml, options = {}) {
 		if (!this._modalElement) {
-			console.error(
-				"Modal no inicializado. Asegúrate de llamar Modal.init() en DOMContentLoaded."
-			);
+			console.error("Modal no inicializado. Llama a Modal.init() primero.");
 			return;
 		}
 
-		// Limpiar callbacks anteriores
-		this._activeConfirmCallback = null;
-		this._activeCancelCallback = null;
-		this._activeCloseCallback = null;
+		// Limpiar callbacks de la sesión anterior
+		this._activeConfirmCallback = options.onConfirm || null;
+		this._activeCancelCallback = options.onCancel || null;
+		this._activeCloseCallback = options.onClose || null;
 
+		// Rellenar contenido
 		this._modalTitleElement.textContent = title;
 		this._modalBodyElement.innerHTML = contentHtml;
 
-		// Limpiar clases de tamaño anteriores y aplicar nueva
+		// Ajustar tamaño del modal
 		const modalContent = this._modalElement.querySelector(".app-modal-content");
 
 		modalContent.classList.remove("modal-sm", "modal-lg", "modal-xl");
@@ -83,180 +89,129 @@ export const Modal = {
 			modalContent.classList.add(`modal-${options.size}`);
 		}
 
-		// Configurar footer y botones
-		const confirmBtn = this._modalFooterElement.querySelector(
-			".app-modal-confirm-btn"
-		);
-
-		const cancelBtn = this._modalFooterElement.querySelector(
-			".app-modal-cancel-btn"
-		);
-
-		if (options.showFooter === false) {
-			this._modalFooterElement.style.display = "none";
-		} else {
-			this._modalFooterElement.style.display = "flex";
-
-			confirmBtn.textContent = options.confirmBtnText || "Aceptar";
-			cancelBtn.textContent = options.cancelBtnText || "Cancelar";
-
-			confirmBtn.onclick = null;
-			cancelBtn.onclick = null;
-
-			if (options.onConfirm && typeof options.onConfirm === "function") {
-				this._activeConfirmCallback = options.onConfirm;
-
-				confirmBtn.onclick = () => {
-					// El callback de onConfirm no cierra el modal automáticamente
-					// para permitir validaciones antes del cierre.
-					// Debe llamarse Modal.hide() manualmente después de la confirmación.
-					this._activeConfirmCallback(this._modalBodyElement); // Pasa el body del modal para que el callback acceda al form/contenido
-				};
-			} else {
-				confirmBtn.onclick = () => this.hide();
-			}
-
-			if (options.onCancel && typeof options.onCancel === "function") {
-				this._activeCancelCallback = options.onCancel;
-
-				cancelBtn.onclick = () => {
-					this._activeCancelCallback();
-					this.hide();
-				};
-			} else {
-				cancelBtn.onclick = () => this.hide();
-			}
-		}
-
-		this._activeCloseCallback = options.onClose || null;
+		// Configurar el footer
+		this._configureFooter(options);
 
 		// Mostrar el modal
 		this._modalElement.classList.add("is-active");
 		document.body.style.overflow = "hidden";
 
-		// Permite que otras funciones actúen sobre el nuevo DOM
-		if (
-			options.onContentReady &&
-			typeof options.onContentReady === "function"
-		) {
-			// Un pequeño setTimeout asegura que el navegador tenga tiempo de parsear el HTML
-			// antes de que el callback intente manipularlo.
-			setTimeout(() => {
-				options.onContentReady(this._modalBodyElement); // Pasa el body del modal
-			}, 50);
+		if (typeof options.onContentReady === "function") {
+			setTimeout(() => options.onContentReady(this._modalBodyElement), 50);
 		}
-	},
+	}
 
 	/**
-	 * Oculta el modal.
+	 * Configura el footer, botones y sus callbacks.
+	 * @param {object} options Opciones pasadas al método show.
+	 * @private
+	 */
+	_configureFooter(options) {
+		if (options.showFooter === false) {
+			this._modalFooterElement.style.display = "none";
+			return;
+		}
+
+		this._modalFooterElement.style.display = "flex";
+		this._confirmBtn.textContent = options.confirmBtnText || "Aceptar";
+		this._cancelBtn.textContent = options.cancelBtnText || "Cancelar";
+
+		// Re-asignamos los listeners para evitar acumulación
+		this._confirmBtn.onclick = () => {
+			if (this._activeConfirmCallback) {
+				this._activeConfirmCallback(this._modalBodyElement);
+			} else {
+				this.hide();
+			}
+		};
+
+		this._cancelBtn.onclick = () => {
+			if (this._activeCancelCallback) {
+				this._activeCancelCallback();
+			}
+			this.hide();
+		};
+
+		this._cancelBtn.style.display = options.showCancelButton === false ? 'none' : 'inline-block';
+		this._confirmBtn.style.width = options.showCancelButton === false ? '100%' : 'auto';
+	}
+
+	/**
+	 * Oculta el modal y limpia su estado.
 	 */
 	hide() {
-		if (!this._modalElement) return;
+		if (!this._modalElement || !this._modalElement.classList.contains("is-active")) return;
 
 		this._modalElement.classList.remove("is-active");
 
+		if (typeof this._activeCloseCallback === "function") {
+			this._activeCloseCallback();
+		}
+
 		setTimeout(() => {
 			document.body.style.overflow = "";
-
-			// Ejecutar callback de cierre general si existe
-			if (
-				this._activeCloseCallback &&
-				typeof this._activeCloseCallback === "function"
-			) {
-				this._activeCloseCallback();
-			}
-
 			this._modalBodyElement.innerHTML = "";
-			// Limpiar callbacks y referencias
 
 			this._activeConfirmCallback = null;
 			this._activeCancelCallback = null;
 			this._activeCloseCallback = null;
-
-			this._modalElement
-				.querySelector(".app-modal-content")
-				.classList.remove("modal-sm", "modal-lg", "modal-xl");
-		}, 500);
-	},
-
-	/**
-	 * Devuelve el elemento body del modal para acceder a su contenido.
-	 * @returns {HTMLElement} El elemento body del modal.
-	 */
-	getBodyElement() {
-		return this._modalBodyElement;
-	},
+		}, 300);
+	}
 
 	/**
 	 * Muestra un modal de confirmación simple.
-	 * @param {string} title
-	 * @param {string} message
-	 * @param {function} onConfirm Callback al confirmar.
-	 * @param {function} [onCancel=null] Callback al cancelar.
+	 * @param {string} title Título de la confirmación.
+	 * @param {string} message Mensaje de la confirmación.
+	 * @param {function} onConfirm Callback a ejecutar si se confirma.
 	 */
-	confirm(title, message, onConfirm, onCancel = null) {
-		const contentHtml = `<p class="text-center">${message}</p>`;
-
-		this.show(title, contentHtml, {
-			size: "sm",
-			confirmBtnText: "Confirmar",
-			cancelBtnText: "Cancelar",
-			onConfirm: (modalBody) => {
+	confirm(title, message, onConfirm) {
+		this.show(title, `<p>${message}</p>`, {
+			size: 'sm',
+			confirmBtnText: 'Confirmar',
+			cancelBtnText: 'Cancelar',
+			onConfirm: () => {
 				onConfirm();
 				this.hide();
-			},
-			onCancel: onCancel,
+			}
 		});
-
-		const cancelButton = this._modalFooterElement.querySelector(
-			".app-modal-cancel-btn"
-		);
-
-		const confirmButton = this._modalFooterElement.querySelector(
-			".app-modal-confirm-btn"
-		);
-
-		if (cancelButton) cancelButton.style.display = "inline-block";
-		if (confirmButton) confirmButton.style.width = "auto";
-	},
+	}
 
 	/**
-	 * Muestra un modal de alerta simple (solo botón de OK).
-	 * @param {string} title
-	 * @param {string} message
-	 * @param {function} [onClose=null] Callback al cerrar o hacer OK.
+	 * Muestra un modal de alerta simple con un solo botón de 'OK'.
+	 * @param {string} title Título de la alerta.
+	 * @param {string} message Mensaje de la alerta.
+	 * @param {function} [onClose=null] Callback opcional al cerrar.
 	 */
 	alert(title, message, onClose = null) {
-		const contentHtml = `<p class="text-center">${message}</p>`;
-		this.show(title, contentHtml, {
-			size: "sm",
-			showFooter: true,
-			confirmBtnText: "OK",
-			cancelBtnText: "Cancelar",
-			onConfirm: (modalBody) => {
-				if (onClose) onClose();
-				this.hide();
-			},
-			onCancel: () => {
-				if (onClose) onClose();
-				this.hide();
-			},
+		this.show(title, `<p>${message}</p>`, {
+			size: 'sm',
+			showCancelButton: false,
+			confirmBtnText: 'OK',
+			onConfirm: onClose,
 		});
+	}
 
-		const cancelButton = this._modalFooterElement.querySelector(
-			".app-modal-cancel-btn"
-		);
+	/**
+	 * Activa/desactiva un estado de carga en el botón de confirmar del modal.
+	 * @param {boolean} isLoading True para mostrar estado de carga, false para quitarlo.
+	 * @param {string} [loadingText='Guardando...'] Texto a mostrar durante la carga.
+	 */
+	setLoading(isLoading, loadingText = 'Guardando...') {
+		if (!this._confirmBtn) return;
+		if (isLoading) {
+			this._confirmBtn.disabled = true;
+			this._confirmBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingText}`;
+		} else {
+			this._confirmBtn.disabled = false;
+			// El texto se restaurará en la próxima llamada a .show()
+			// Pero podríamos guardarlo para restaurarlo aquí si fuera necesario
+			this._confirmBtn.innerHTML = this._confirmBtn.textContent; // Restaura el texto original (ej. 'Aceptar')
+		}
+	}
+}
 
-		const confirmButton = this._modalFooterElement.querySelector(
-			".app-modal-confirm-btn"
-		);
+export const Modal = new ModalManager();
 
-		if (cancelButton) cancelButton.style.display = "none";
-		if (confirmButton) confirmButton.style.width = "100%";
-	},
-};
-
-// Inicializar el modal cuando el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", () => {
 	Modal.init();
 });

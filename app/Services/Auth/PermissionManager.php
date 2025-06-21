@@ -48,6 +48,7 @@ class PermissionManager {
         unset($_SESSION['rol_id']);
         unset($_SESSION['sucursal_id']);
         unset($_SESSION['nombre_usuario']);
+        
         return false;
       }
 

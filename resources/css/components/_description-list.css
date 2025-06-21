@@ -1,0 +1,30 @@
+.description-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem 1.5rem;
+    /* gap vertical y horizontal */
+}
+
+.dl-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.dl-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.dl-label {
+    font-size: 0.8rem;
+    color: var(--color-secondary);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dl-value {
+    font-size: 1rem;
+    color: var(--color-text-dark);
+    word-wrap: break-word;
+}

@@ -28,8 +28,6 @@ window.App.Permissions = {
 			this._rolId = data.rol_id;
 			this._sucursalId = data.sucursal_id;
 
-			console.log("Permisos cargados:", this._userPermissions);
-
 			document.dispatchEvent(new CustomEvent("permissionsLoaded"));
 			return true;
 		} catch (error) {

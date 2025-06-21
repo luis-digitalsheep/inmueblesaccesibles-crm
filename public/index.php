@@ -31,12 +31,10 @@ switch ($routeInfo[0]) {
     break;
 
   case Dispatcher::FOUND:
-    $handler = $routeInfo[1]; // El handler (ej. ['PropiedadController', 'index'])
+    $handler = $routeInfo[1]; // El handler (ej. ['App\Controllers\Api\AuthApiController', 'login'])
     $vars = $routeInfo[2];   // Los parámetros de la URL (ej. ['id' => 123] de /propiedades/ver/123)
 
-    // Extraer el nombre del controlador y el método
-    list($controllerName, $methodName) = $handler;
-    $controllerClass = "App\\Controllers\\" . $controllerName;
+    [$controllerClass, $methodName] = $handler;
 
     if (!class_exists($controllerClass)) {
       http_response_code(500);
@@ -44,19 +42,20 @@ switch ($routeInfo[0]) {
       error_log("Error 500: Controlador {$controllerName} no encontrado.");
       exit();
     }
-    if (!method_exists($controllerClass, $methodName)) {
+
+    $controller = new $controllerClass();
+    
+    if (!method_exists($controller, $methodName)) {
       http_response_code(500);
       include BASE_PATH . '/app/Views/errors/500.php';
       error_log("Error 500: Método {$methodName} no existe en el controlador {$controllerName}.");
       exit();
     }
 
-    $controller = new $controllerClass();
-
     // --- Lógica de Verificación de Autenticación y Permisos ---
     $publicRoutes = [
       'GET /login',
-      'POST /login',
+      'POST /api/auth/login',
       'GET /logout'
     ];
 

@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	// Mostrar las propiedades en la tabla
 	function renderTable(propiedades) {
 		const canValidatePropiedad =
-			window.App.Permissions.hasPermission("cartera.validar");
+			window.App.Permissions.hasPermission("validaciones_cartera.validar");
 
 		propiedadesTableBody.innerHTML = "";
 
@@ -98,10 +98,10 @@ document.addEventListener("DOMContentLoaded", function () {
 			const colspan = 13;
 
 			propiedadesTableBody.innerHTML = `
-        <tr>
-          <td colspan="${colspan}" class="text-center">No hay propiedades registradas que coincidan con los filtros.</td>
-        </tr>
-      `;
+				<tr>
+				<td colspan="${colspan}" class="text-center">No hay propiedades registradas que coincidan con los filtros.</td>
+				</tr>
+			`;
 			return;
 		}
 
@@ -109,10 +109,11 @@ document.addEventListener("DOMContentLoaded", function () {
 			const row = document.createElement("tr");
 
 			row.innerHTML += `<td>${propiedad.id}</td>`;
+			row.innerHTML += `<td>${propiedad.cartera_nombre}</td>`;
 			row.innerHTML += `<td>${propiedad.numero_credito}</td>`;
 			row.innerHTML += `<td class="column-direccion">${propiedad.direccion}</td>`;
-			row.innerHTML += `<td>${propiedad.estado_nombre}</td>`;
-			row.innerHTML += `<td>${propiedad.municipio_nombre}</td>`;
+			row.innerHTML += `<td>${propiedad.estado}</td>`;
+			row.innerHTML += `<td>${propiedad.municipio}</td>`;
 
 			row.innerHTML += `<td>$${parseFloat(
 				propiedad.precio_lista
@@ -121,65 +122,44 @@ document.addEventListener("DOMContentLoaded", function () {
 				maximumFractionDigits: 2,
 			})}</td>`;
 
-			row.innerHTML += `<td>$${parseFloat(
-				propiedad.precio_venta
-			).toLocaleString("es-MX", {
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2,
-			})}</td>`;
-
-			let estatusDisplay = propiedad.estatus_disponibilidad;
+			let estatusDisplay = propiedad.estatus;
 			let claseEstatus = "";
 			let tooltipInfo = estatusDisplay;
 
 			switch (estatusDisplay) {
-				case "Apartada":
+				case "Pendiente":
 					claseEstatus = "status-apartada";
 					if (propiedad.asignacion_cliente_nombre) {
 						tooltipInfo += " por: " + propiedad.asignacion_cliente_nombre;
 					}
 					break;
-				case "Vendida":
+				case "Validado":
 					claseEstatus = "status-vendida";
 					if (propiedad.asignacion_cliente_nombre) {
 						tooltipInfo += " a: " + propiedad.asignacion_cliente_nombre;
 					}
 					break;
-				case "En Proceso de Cambio":
-					claseEstatus = "status-en-proceso-cambio";
-					break;
-				case "Retirada":
+				case "Rechazado":
 					claseEstatus = "status-retirada";
-					break;
-				default: // Disponible
-					claseEstatus = "status-disponible";
 					break;
 			}
 
 			row.innerHTML += `
-        <td>
-          <span class="status-badge ${claseEstatus}" title="${tooltipInfo}">
-            ${estatusDisplay}
-          </span>
-        </td>
-      `;
+				<td>
+				<span class="status-badge ${claseEstatus}" title="${tooltipInfo}">
+					${estatusDisplay}
+				</span>
+				</td>
+			`;
 
 			row.innerHTML += `<td>${propiedad.sucursal_nombre}</td>`;
 			row.innerHTML += `<td>${propiedad.administradora_nombre}</td>`;
 
-			row.innerHTML += `<td><a class="btn btn-info btn-sm" href="${propiedad.mapa_url}" target="_blank">Ver Mapa</a></td>`;
+			let actionsHtml = ``;
 
-			let actionsHtml = `<a href="/propiedades/ver/${propiedad.id}" class="btn btn-info btn-sm">Ver</a>`;
-
-			if (canEditPropiedad) {
-				actionsHtml += `<a href="/propiedades/editar/${propiedad.id}" class="btn btn-primary btn-sm">Editar</a>`;
+			if (canValidatePropiedad) {
+				actionsHtml += `<a href="/validaciones-cartera/validar/${propiedad.id}" class="btn btn-primary btn-sm">Validar</a>`;
 			}
-
-			if (canDeletePropiedad) {
-				actionsHtml += `<a href="#" data-id="${propiedad.id}" class="btn btn-danger btn-sm delete-btn">Eliminar</a>`;
-			}
-
-			console.log("Editar: ", canEditPropiedad);
 
 			row.innerHTML += `<td class="actions-column">${actionsHtml}</td>`;
 
@@ -191,6 +171,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	function getCurrentFilters() {
 		const filters = {};
 		const formData = new FormData(propertyFiltersForm);
+
 		for (const [key, value] of formData.entries()) {
 			if (value !== "") {
 				filters[key] = value;
@@ -202,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		return filters;
 	}
 
-	// Función para obtener las propiedades
+	// Función para obtener las propiedades en revision
 	async function loadProperties() {
 		propiedadesTableBody.innerHTML = `<tr><td colspan="12" class="text-center">Cargando propiedades...</td></tr>`;
 
@@ -212,6 +193,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		try {
 			const response = await fetch(`/api/validaciones-cartera?${queryString}`);
 			const result = await response.json();
+
+			console.log("Filtros aplicados:", filters);
+			console.log("Resultado de la carga de propiedades:", result);
 
 			if (result.status === "success") {
 				renderTable(result.data);

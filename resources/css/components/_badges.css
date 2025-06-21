@@ -1,0 +1,39 @@
+.status-badge {
+    display: inline-block;
+    padding: 0.4em 0.8em;
+    font-size: 0.8em;
+    font-weight: 600;
+    /* line-height: 1 */
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 10rem;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+/* Colores de Status Badge */
+.status-apartada {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.status-vendida {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.status-disponible {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.status-en-proceso-cambio {
+    background-color: #6f42c1;
+    color: #fff;
+}
+
+.status-retirada {
+    background-color: #6c757d;
+    color: #fff;
+}

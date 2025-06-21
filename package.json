@@ -1,0 +1,28 @@
+{
+  "name": "inmueblesaccesibles-crm",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "postcss resources/css/app.css -o public/assets/css/main.css --watch",
+    "build": "NODE_ENV=production postcss resources/css/app.css -o public/assets/css/main.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luis-digitalsheep/inmueblesaccesibles-crm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luis-digitalsheep/inmueblesaccesibles-crm/issues"
+  },
+  "homepage": "https://github.com/luis-digitalsheep/inmueblesaccesibles-crm#readme",
+  "description": "",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "cssnano": "^7.0.7",
+    "postcss": "^8.5.5",
+    "postcss-cli": "^11.0.1",
+    "postcss-import": "^16.1.0"
+  }
+}

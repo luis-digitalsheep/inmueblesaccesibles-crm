@@ -2,13 +2,12 @@ document.addEventListener("DOMContentLoaded", function () {
 	const loginForm = document.getElementById("loginForm");
 	const alertContainer = document.getElementById("alert-message-container");
 
-	// Función para mostrar mensajes de alerta
 	function showAlert(message, type = "error") {
 		alertContainer.innerHTML = "";
 
 		const alertDiv = document.createElement("div");
 
-		alertDiv.className = `alert ${type}`; // Clase CSS para el tipo de alerta (ej. 'alert error', 'alert success')
+		alertDiv.className = `alert ${type}`;
 		alertDiv.textContent = message;
 
 		alertContainer.appendChild(alertDiv);
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	}
 
-	// Intercepta el envío del formulario
 	if (loginForm) {
 		loginForm.addEventListener("submit", async function (event) {
 			event.preventDefault();
@@ -28,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			const formData = new FormData(loginForm);
 
 			try {
-				const response = await fetch(loginForm.action, {
+				const response = await fetch('api/auth/login', {
 					method: loginForm.method,
 					body: formData,
 				});
