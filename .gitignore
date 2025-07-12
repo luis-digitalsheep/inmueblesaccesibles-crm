@@ -1,8 +1,8 @@
 /vendor/
 /node_modules/
 .env
-/storage/
-/public/uploads/
+/storage/*
+/public/uploads/*
 
 !/storage/.gitkeep
 !/public/uploads/.gitkeep
