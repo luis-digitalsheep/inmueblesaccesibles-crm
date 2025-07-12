@@ -6,13 +6,16 @@ use App\Controllers\Api\AdministradoraApiController;
 use App\Controllers\Api\AuthApiController;
 use App\Controllers\Api\CarteraApiController;
 use App\Controllers\Api\CatalogoApiController;
+use App\Controllers\Api\ClienteApiController;
 use App\Controllers\Api\DocumentoApiController;
 use App\Controllers\Api\ProcesoVentaApiController;
 use App\Controllers\Api\PropiedadApiController;
 use App\Controllers\Api\PropiedadRevisionApiController;
 use App\Controllers\Api\ProspectoApiController;
+use App\Controllers\Api\SeguimientoApiController;
 use App\Controllers\Api\SucursalApiController;
 use App\Controllers\Api\UsuarioApiController;
+use App\Controllers\Api\UploadApiController;
 
 /**
  * Define las rutas de la API de la aplicación.
@@ -36,7 +39,10 @@ return function (RouteCollector $api) {
     $api->addRoute('GET', '/propiedades/disponibles', [PropiedadApiController::class, 'getAvailableProperties']);
 
     // --- API de Validaciones de Cartera ---
-    $api->addRoute('GET', '/validaciones-cartera', [PropiedadRevisionApiController::class, 'apiGetAll']);
+    $api->addRoute('GET', '/validacion-cartera', [PropiedadRevisionApiController::class, 'apiGetAll']);
+    $api->addRoute('GET', '/validacion-cartera/{id:\d+}', [PropiedadRevisionApiController::class, 'apiGetById']);
+    $api->addRoute('PUT', '/validacion-cartera/{id:\d+}', [PropiedadRevisionApiController::class, 'apiUpdate']);
+    $api->addRoute('POST', '/validacion-cartera/{id:\d+}/fotos', [PropiedadRevisionApiController::class, 'uploadFotos']);
 
     // --- API de Carteras ---
     $api->addRoute('POST', '/carteras/upload', [CarteraApiController::class, 'apiUploadCartera']);
@@ -46,7 +52,10 @@ return function (RouteCollector $api) {
 
     // --- API de Prospectos ---
     $api->addRoute('GET', '/prospectos', [ProspectoApiController::class, 'apiGetAll']);
+    $api->addRoute('POST', '/prospectos', [ProspectoApiController::class, 'apiCreate']);
     $api->addRoute('GET', '/prospectos/{id:\d+}', [ProspectoApiController::class, 'apiGetById']);
+    $api->addRoute('PUT', '/prospectos/{id:\d+}', [ProspectoApiController::class, 'apiUpdate']);
+
     $api->addRoute('GET', '/prospectos/{id:\d+}/procesos-venta', [ProcesoVentaApiController::class, 'apiGetByProspecto']);
     $api->addRoute('POST', '/prospectos/{id:\d+}/procesos-venta', [ProcesoVentaApiController::class, 'apiCreateForProspecto']);
 
@@ -57,10 +66,36 @@ return function (RouteCollector $api) {
 
     $api->addRoute('GET', '/prospectos/{id:\d+}/documentos', [DocumentoApiController::class, 'apiGetByProspecto']);
     $api->addRoute('POST', '/prospectos/{id:\d+}/documentos', [DocumentoApiController::class, 'apiStoreForProspecto']);
+    $api->addRoute('POST', '/prospectos/{prospectoId:\d+}/convertir-a-cliente', [ProspectoApiController::class, 'convertToCliente']);
+
+    // --- API de Procesos de Venta ---
+    $api->addRoute('GET', '/procesos-venta/{id:\d+}', [ProcesoVentaApiController::class, 'show']);
+    $api->addRoute('GET', '/procesos-venta/{id:\d+}/seguimientos', [SeguimientoApiController::class, 'getByProcesoVenta']);
+    $api->addRoute('GET', '/procesos-venta/{id:\d+}/documentos', [DocumentoApiController::class, 'getByProcesoVenta']);
+    $api->addRoute('PUT', '/procesos-venta/{id}/update-status', [ProcesoVentaApiController::class, 'updateStatus']);
+
+    // --- API de Folios ---
+    $api->addRoute('POST', '/procesos-venta/{id:\d+}/generar-folio', [ProcesoVentaApiController::class, 'generarFolio']);
+
+    // --- API de Comprobante de apartado ---
+    $api->addRoute('POST', '/procesos-venta/{id}/subir-comprobante', [ProcesoVentaApiController::class, 'subirComprobante']);
+
+    // --- API de Clientes ---
+    $api->addRoute('GET', '/clientes', [ClienteApiController::class, 'index']);
+    $api->addRoute('GET', '/clientes/{id:\d+}', [ClienteApiController::class, 'show']);
+    $api->addRoute('GET', '/clientes/{id:\d+}/procesos-venta', [ProcesoVentaApiController::class, 'indexByCliente']);
+    $api->addRoute('GET', '/clientes/{id:\d+}/seguimientos', [SeguimientoApiController::class, 'indexByCliente']);
+    $api->addRoute('GET', '/clientes/{id:\d+}/documentos', [DocumentoApiController::class, 'indexByCliente']);
+    $api->addRoute('PUT', '/clientes/{id:\d+}', [ClienteApiController::class, 'update']);
 
     // --- API de Catálogos ---
+    $api->addRoute('GET', '/catalogos/estados', [CatalogoApiController::class, 'apiGetEstados']);
     $api->addRoute('GET', '/catalogos/municipios', [CatalogoApiController::class, 'apiGetMunicipiosByEstado']);
     $api->addRoute('GET', '/catalogos/sucursales', [CatalogoApiController::class, 'apiGetSucursales']);
     $api->addRoute('GET', '/catalogos/estatus-prospeccion', [CatalogoApiController::class, 'apiGetEstatusProspeccion']);
     $api->addRoute('GET', '/catalogos/estatus-global-prospecto', [CatalogoApiController::class, 'apiGetAllEstatusGlobalProspecto']);
+    $api->addRoute('GET', '/catalogos/administradoras', [CatalogoApiController::class, 'apiGetAdministradoras']);
+
+    // --- API para Subidas de Archivos ---
+    $api->addRoute('POST', '/uploads/temp-photo', [UploadApiController::class, 'handleTempUpload']);
 };

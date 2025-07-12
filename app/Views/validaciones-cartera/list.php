@@ -10,8 +10,6 @@ $currentFilters = $_GET ?? [];
 
 $canValidate = $canValidate ?? false;
 
-// $estatus = ['Pendiente', 'Validado', 'Rechazado'];
-
 ?>
 
 <div class="page-header-area">
@@ -130,4 +128,4 @@ $canValidate = $canValidate ?? false;
   </div>
 </div>
 
-<script type="module" src="/assets/js/validaciones-cartera.js"></script>
+<script type="module" src="/assets/js/pages/validaciones-cartera/list.js"></script>

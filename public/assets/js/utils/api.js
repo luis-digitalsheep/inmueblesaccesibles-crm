@@ -56,7 +56,7 @@ export async function fetchData(endpoint, params = null) {
 
         const result = await response.json();
 
-        return result.data || [];
+        return result || [];
     } catch (error) {
         console.error(`Error de conexión o parseo al llamar a ${endpoint}:`, error);
         throw error;

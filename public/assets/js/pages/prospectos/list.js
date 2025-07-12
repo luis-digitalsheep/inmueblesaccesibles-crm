@@ -1,6 +1,6 @@
-import { Modal } from './utils/modal.js';
-import { showAlert } from './utils/alerts.js';
-import { fetchCatalog, fetchData, postData, deleteData } from './utils/api.js';
+import { Modal } from '../../utils/modal.js';
+import { showAlert } from '../../utils/alerts.js';
+import { fetchCatalog, fetchData, postData, deleteData } from '../../utils/api.js';
 
 // --- Variables ---
 const appState = {
@@ -69,7 +69,7 @@ function renderTable(prospectos) {
             <td>${p.sucursal_nombre || 'N/A'}</td>
             <td>${new Date(p.created_at).toLocaleDateString('es-MX')}</td>
             <td class="actions-column">
-                <a href="/prospectos/ver/${p.id}" class="btn btn-sm btn-info" title="Ver Detalles y Seguimiento">Gestionar</a>
+                <a href="/prospectos/ver/${p.id}" class="btn btn-sm btn-primary" title="Ver Detalles y Seguimiento">Gestionar</a>
                 <button class="btn btn-sm btn-danger btn-delete" data-id="${p.id}" title="Eliminar Prospecto">Eliminar</button>
             </td>
         </tr>
@@ -122,14 +122,14 @@ async function fetchProspectos() {
 
 async function fetchCatalogosParaFiltros() {
     try {
-        const [usuarios, sucursales, estatus] = await Promise.all([
+        const [usuariosResponse, sucursalesResponse, estatusResponse] = await Promise.all([
             fetchData('/api/usuarios'),
             fetchCatalog('sucursales'),
         ]);
 
-        // Poblar los selects de los filtros
-        document.getElementById('filter_usuario').innerHTML += usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
-        document.getElementById('filter_sucursal').innerHTML += sucursales.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+        const usuarios = usuariosResponse.data;
+        const sucursales = sucursalesResponse.data;
+
 
         return { usuarios, sucursales };
     } catch (error) {
@@ -140,19 +140,23 @@ async function fetchCatalogosParaFiltros() {
 }
 
 async function handleNuevoProspecto() {
-    const catalogosParaForm = await fetchCatalogosParaFiltros(); // Reutiliza la misma función
+    const catalogosParaForm = await fetchCatalogosParaFiltros();
+
     if (!catalogosParaForm) {
         showAlert('No se pudieron cargar los datos necesarios para crear un prospecto.', 'error');
         return;
     }
-    Modal.show('Creación Rápida de Prospecto', getCreateFormHtml(catalogosParaForm), {
+
+    Modal.show('Nuevo Prospecto', getCreateFormHtml(catalogosParaForm), {
         onConfirm: async () => {
             const form = document.getElementById('quickCreateForm');
             const data = Object.fromEntries(new FormData(form).entries());
             // Validación simple en cliente
+
             if (!data.nombre || !data.celular) {
                 showAlert('Nombre y celular son requeridos.', 'error'); return;
             }
+            
             // Llamada a la API
             try {
                 const response = await fetch('/api/prospectos', {
@@ -194,9 +198,13 @@ function handleDeleteProspecto(id) {
 }
 
 // --- Eventos ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     fetchProspectos();
-    fetchCatalogosParaFiltros();
+
+    const { usuarios, sucursales } = await fetchCatalogosParaFiltros();
+
+    document.getElementById('filter_usuario').innerHTML += usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
+    document.getElementById('filter_sucursal').innerHTML += sucursales.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
 
     btnNuevoProspecto?.addEventListener('click', handleNuevoProspecto);
 

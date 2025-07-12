@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
             municipioSelect.innerHTML = '<option value="">Error de conexión</option>';
         }
     }
+    
     estadoSelect.addEventListener('change', function () {
         loadMunicipiosByEstado(this.value, municipioOriginal);
     });

@@ -16,6 +16,40 @@ class UsuarioModel
     $this->db = Database::getInstance()->getConnection();
   }
 
+  public function getAll($filters = []): array
+  {
+    $sql = "SELECT id, nombre, email, telefono, avatar_url FROM {$this->tableName}";
+
+    $params = [];
+
+    if (isset($filters['id']) && $filters['id'] !== '') {
+      $sql .= " WHERE id = :id";
+
+      $params[':id'] = (int) $filters['id'];
+    } else {
+      $sql .= " WHERE activo = 1";
+    }
+
+    $sql .= " ORDER BY nombre ASC";
+
+
+    try {
+      $stmt = $this->db->prepare($sql);
+
+      foreach ($params as $key => $value) {
+        $stmt->bindParam($key, $params[$key], PDO::PARAM_INT);
+      }
+
+      $stmt->execute();
+      
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en UsuarioModel::getAll: " . $e->getMessage());
+      return [];
+    }
+  }
+
   /**
    * Busca un usuario en la base de datos por su email.
    *
@@ -57,10 +91,10 @@ class UsuarioModel
   public function getAllForSelect(): array
   {
     $sql = "SELECT id, nombre FROM usuarios WHERE activo = 1 ORDER BY nombre ASC";
-    
+
     try {
       $stmt = $this->db->query($sql);
-      
+
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
       error_log("Error en UsuarioModel::getAllForSelect: " . $e->getMessage());

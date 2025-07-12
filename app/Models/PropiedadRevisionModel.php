@@ -193,6 +193,10 @@ class PropiedadRevisionModel
           p.precio_lista,
           p.estatus,
 
+          c.nombre as cartera_nombre,
+          c.id as cartera_id,
+          c.codigo as cartera_codigo,
+
           p.created_at,
           p.updated_at,
                       
@@ -204,6 +208,7 @@ class PropiedadRevisionModel
         FROM {$this->tableName} p
         LEFT JOIN cat_sucursales s ON p.sucursal_id = s.id
         LEFT JOIN cat_administradoras adm ON p.administradora_id = adm.id
+        LEFT JOIN carteras c ON p.cartera_id = c.id
 
         WHERE p.id = :id LIMIT 1
       ";
@@ -224,7 +229,7 @@ class PropiedadRevisionModel
    * @param array $data Datos de la propiedad a insertar.
    * @return int|false El ID del registro insertado o false en error.
    */
-  public function createRevision(array $data)
+  public function createRevision(int $usuarioId, array $data)
   {
     $sql = "INSERT INTO {$this->tableName} (
         cartera_id,
@@ -246,7 +251,8 @@ class PropiedadRevisionModel
         cofinavit,
         avaluo_administradora,
         precio_lista,
-        estatus
+        estatus,
+        creado_por_usuario_id
     ) VALUES (
         :cartera_id,
         :numero_credito,
@@ -267,7 +273,8 @@ class PropiedadRevisionModel
         :cofinavit,
         :avaluo_administradora,
         :precio_lista,
-        :estatus
+        :estatus,
+        :usuario_id
     )";
 
     try {
@@ -293,6 +300,7 @@ class PropiedadRevisionModel
       $stmt->bindParam(':avaluo_administradora', $data['avaluo_administradora']);
       $stmt->bindParam(':precio_lista', $data['precio_lista']);
       $stmt->bindParam(':estatus', $data['estatus']);
+      $stmt->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
 
       if ($stmt->execute()) {
         return (int)$this->db->lastInsertId();
@@ -300,6 +308,34 @@ class PropiedadRevisionModel
       return false;
     } catch (PDOException $e) {
       error_log("Error en PropiedadRevisionModel::createRevision: " . $e->getMessage() . " Data: " . json_encode($data));
+      return false;
+    }
+  }
+
+  /**
+   * Actualiza el estatus de un registro de revisión y lo asocia con la propiedad final creada.
+   * @param int $revisionId El ID del registro en `propiedades_revision`.
+   * @param string $newStatus El nuevo estatus (ej. 'Validado').
+   * @param int $finalPropiedadId El ID de la nueva propiedad creada en la tabla `propiedades`.
+   * @return bool True si la actualización fue exitosa, false en caso contrario.
+   */
+  public function updateStatus(int $revisionId, string $newStatus, int $finalPropiedadId): bool
+  {
+    $sql = "UPDATE propiedades_revision SET 
+          estatus = :new_status, 
+          propiedad_final_id = :final_propiedad_id 
+      WHERE id = :id
+    ";
+
+    try {
+      $stmt = $this->db->prepare($sql);
+      $stmt->bindParam(':new_status', $newStatus, PDO::PARAM_STR);
+      $stmt->bindParam(':final_propiedad_id', $finalPropiedadId, PDO::PARAM_INT);
+      $stmt->bindParam(':id', $revisionId, PDO::PARAM_INT);
+
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error en PropiedadRevisionModel::updateStatus: " . $e->getMessage());
       return false;
     }
   }

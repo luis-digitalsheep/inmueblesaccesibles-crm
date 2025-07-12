@@ -18,6 +18,7 @@ let formCatalogos = {
 const globalStatusContainer = document.getElementById('global-status-container');
 const infoGeneralContainer = document.getElementById('info-general-container');
 const procesosVentaContainer = document.getElementById('procesos-venta-container');
+const documentosContainer = document.getElementById('documentos-container');
 const pageTitleElement = document.getElementById('pageTitle');
 
 
@@ -95,7 +96,7 @@ function renderProcesosVentaList(procesos) {
     let listHtml = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5>Oportunidades de Venta Asociadas</h5>
-            ${permissions.canCreateProceso ? `<button class="btn btn-primary btn-sm" id="btnNuevoProceso"><i class="fas fa-plus"></i> Añadir Proceso de Venta</button>` : ''}
+            ${permissions.canCreateProceso ? `<button class="btn btn-primary btn-sm" id="btnNuevoProceso">Añadir Proceso de Venta</button>` : ''}
         </div>
         <div class="table-responsive">
             <table class="table">
@@ -121,7 +122,7 @@ function renderProcesosVentaList(procesos) {
                     <td><span class="status-badge status-disponible">${proceso.estatus_nombre || 'N/A'}</span></td>
                     <td>${new Date(proceso.created_at).toLocaleDateString('es-MX')}</td>
                     <td class="actions-column">
-                        <a href="/procesos-venta/ver/${proceso.id}" class="btn btn-info btn-sm">Gestionar Proceso</a>
+                        <a href="/procesos-venta/ver/${proceso.id}" class="btn btn-primary btn-sm">Gestionar Proceso</a>
                     </td>
                 </tr>`;
         });
@@ -204,6 +205,42 @@ function renderInfoGeneralForm(prospecto, catalogos) {
     infoGeneralContainer.innerHTML = formHtml;
 }
 
+function renderDocumentosTab(documentos) {
+    let listHtml = `
+        <h5 class="form-section-title">Documentos Adjuntos</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre del Archivo</th>
+                    <th>Tipo</th>
+                    <th>Fecha de Subida</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    if (!documentos || documentos.length === 0) {
+        listHtml += '<tr><td colspan="4" class="text-center">No hay documentos para este prospecto.</td></tr>';
+    } else {
+        documentos.forEach(doc => {
+            listHtml += `
+                <tr>
+                    <td>${doc.nombre_archivo}</td>
+                    <td><span class="status-badge status-retirada">${doc.tipo_documento_nombre}</span></td>
+                    <td>${new Date(doc.created_at).toLocaleDateString('es-MX')}</td>
+                    <td class="actions-column">
+                        <a href="/documentos/descargar/${doc.id}" target="_blank" class="btn btn-sm btn-secondary" title="Ver Documento">Ver</a>
+                        <button class="btn btn-sm btn-danger btn-delete-doc" data-doc-id="${doc.id}" title="Eliminar">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    listHtml += '</tbody></table>';
+    documentosContainer.innerHTML = listHtml;
+}
 
 // =================================================================
 // MANEJADORES DE EVENTOS
@@ -219,6 +256,8 @@ async function handleUpdateInfoGeneral(e) {
     const form = e.target;
     const data = Object.fromEntries(new FormData(form).entries());
 
+    data.id = prospectoId;
+
     try {
         const result = await putData(`/api/prospectos/${prospectoId}`, data);
         showAlert(result.message, 'success');
@@ -228,6 +267,7 @@ async function handleUpdateInfoGeneral(e) {
 
         toggleEditMode(false, infoGeneralContainer);
     } catch (error) {
+        console.error(error);
         showAlert(error.message, 'error');
     }
 }
@@ -237,7 +277,9 @@ async function handleUpdateInfoGeneral(e) {
  */
 async function handleNuevoProcesoVenta() {
     try {
-        const propiedadesDisponibles = await fetchData('/api/propiedades/disponibles');
+        const propiedadesDisponiblesResult = await fetchData('/api/propiedades/disponibles');
+        const propiedadesDisponibles = propiedadesDisponiblesResult.data;
+
 
         if (propiedadesDisponibles.length === 0) {
             Modal.alert('Sin Propiedades', 'Actualmente no hay propiedades disponibles para asignar.');
@@ -277,7 +319,11 @@ async function handleNuevoProcesoVenta() {
                     showAlert(result.message, 'success');
                     Modal.hide();
 
-                    const nuevosProcesos = await fetchData(`/api/prospectos/${prospectoId}/procesos-venta`);
+                    const nuevosProcesosResult = await fetchData(`/api/prospectos/${prospectoId}/procesos-venta`);
+
+                    const nuevosProcesos = nuevosProcesosResult.data;
+
+                    console.log(nuevosProcesos);
 
                     renderProcesosVentaList(nuevosProcesos);
                 } catch (error) {
@@ -307,13 +353,30 @@ function handleTabsClick(event) {
  * @param {Event} e - El evento del clic.
  */
 function handleGlobalWorkflowAction(e) {
-    const button = e.target;
-    const docType = button.dataset.docType;
-    const docName = button.dataset.docName;
-    const nextStatusId = button.dataset.nextStatusId;
+    const button = e.target.closest('button');
+    if (!button) return;
 
     if (button.matches('.btn-upload-global')) {
-        openUploadModal(docType, docName, nextStatusId);
+        console.log('btn-upload-global', button)
+        const docTypeId = button.dataset.docType;
+        const docName = button.dataset.docName;
+
+        console.log(docTypeId)
+
+        openUploadModal(docTypeId, docName);
+    } else if (button.matches('.btn-marcar-paso-global')) {
+        const nextStatusId = button.dataset.nextStatusId;
+
+        if (nextStatusId) {
+
+            Modal.confirm(
+                'Confirmar Avance',
+                '¿Estás seguro de que deseas mover este prospecto al siguiente paso del flujo?',
+                () => {
+                    updateGlobalStatus(nextStatusId);
+                }
+            );
+        }
     }
 }
 
@@ -324,10 +387,10 @@ function handleGlobalWorkflowAction(e) {
 /**
  * Abre un modal con una instancia de Dropzone para subir un documento.
  * @param {string} docTypeId - El ID del tipo de documento a subir.
- * @param {string} docName - El nombre descriptivo del documento para el título del modal.
- * @param {string} nextStatusId - El ID del siguiente estatus al que avanzará el prospecto.
+ * @param {string} docName - El nombre descriptivo del documento para el título del modal..
  */
-function openUploadModal(docTypeId, docName, nextStatusId) {
+function openUploadModal(docTypeId, docName) {
+    
     const formHtml = `
         <p>Arrastra el archivo o haz clic en el área para seleccionarlo.</p>
         <form action="/api/prospectos/${prospectoId}/documentos" class="dropzone custom-dropzone" id="documentUploadDropzone"></form>
@@ -350,7 +413,7 @@ function openUploadModal(docTypeId, docName, nextStatusId) {
                     showAlert(response.message || 'Documento subido con éxito.', 'success');
                     Modal.hide();
 
-                    updateGlobalStatus(nextStatusId);
+                    setTimeout(() => window.location.reload(), 1500);
                 },
 
                 error: function (file, errorMessage) {
@@ -369,17 +432,15 @@ function openUploadModal(docTypeId, docName, nextStatusId) {
 // FUNCIONES GENERALES
 // =================================================================
 
-/**
- * Llama a la API para actualizar el estatus global del prospecto.
- * @param {string} newStatusId 
- */
 async function updateGlobalStatus(newStatusId) {
     if (!newStatusId) return;
 
     try {
         await putData(`/api/prospectos/${prospectoId}/update-global-status`, { estatus_global_id: newStatusId });
 
-        window.location.reload();
+        showAlert('Estatus del prospecto actualizado. Recargando...', 'info');
+
+        setTimeout(() => window.location.reload(), 1500);
     } catch (error) {
         showAlert(error.message, 'error');
     }
@@ -391,34 +452,43 @@ async function updateGlobalStatus(newStatusId) {
 async function initPage() {
     try {
         const [
-            { prospecto },
-            procesosVenta,
-            estatusGlobal,
-            usuarios,
-            sucursales
+            { data: prospecto },
+            { data: procesosVenta },
+            { data: estatusGlobal },
+            { data: usuarios },
+            { data: sucursales },
+            { data: documentos }
         ] = await Promise.all([
             fetchData(`/api/prospectos/${prospectoId}`),
             fetchData(`/api/prospectos/${prospectoId}/procesos-venta`),
             fetchCatalog('estatus-global-prospecto'),
-            fetchData('/api/usuarios/simple-list'),
-            fetchCatalog('sucursales')
+            fetchData('/api/usuarios'),
+            fetchCatalog('sucursales'),
+            fetchData(`/api/prospectos/${prospectoId}/documentos`)
         ]);
 
         console.log('prospecto', prospecto);
+        
+        let prospectoInfo = prospecto.prospecto;
 
-        originalProspectoData = prospecto;
+        console.log('prospecto', prospectoInfo);
+
+        originalProspectoData = prospectoInfo;
 
         formCatalogos.usuarios = usuarios;
         formCatalogos.sucursales = sucursales;
 
         // Actualizar título de la página con el nombre del prospecto
-        pageTitleElement.textContent = `Prospecto: ${prospecto.nombre}`;
+        pageTitleElement.textContent = `Prospecto: ${prospectoInfo.nombre}`;
+
+
 
         // Renderizar cada sección con los datos obtenidos
-        renderGlobalWorkflow(prospecto, estatusGlobal);
-        renderInfoGeneralForm(prospecto, formCatalogos);
+        renderGlobalWorkflow(prospectoInfo, estatusGlobal);
+        renderInfoGeneralForm(prospectoInfo, formCatalogos);
+        renderDocumentosTab(documentos);
 
-        const estatusGlobalActual = prospecto.estatus_global_id || 1;
+        const estatusGlobalActual = prospectoInfo.estatus_global_id || 1;
 
         if (estatusGlobalActual >= 2) {
             renderProcesosVentaList(procesosVenta);
@@ -426,12 +496,9 @@ async function initPage() {
             renderProcesosVentaPlaceholder();
         }
 
-        document.getElementById('global-status-container').addEventListener('click', (event) => {
-            if (event.target.matches('.btn-upload-global')) {
-                handleGlobalWorkflowAction(event);
-            }
-        });
+        const globalStatusContainer = document.getElementById('global-status-container');
 
+        globalStatusContainer.addEventListener('click', handleGlobalWorkflowAction);
     } catch (error) {
         showAlert('No se pudo cargar la información del prospecto. ' + error.message, 'error');
         document.querySelector('.card-body').innerHTML = '<p class="text-danger text-center">Error al cargar los datos. Por favor, intente recargar la página.</p>';

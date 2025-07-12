@@ -6,6 +6,11 @@ use App\Controllers\ApiController;
 
 use App\Models\CatalogoModel;
 
+use App\Services\Auth\PermissionManager;
+
+/**
+ * @property-read PermissionManager $permissionManager
+ */
 class CatalogoApiController extends ApiController
 {
     private $catalogoModel;
@@ -14,6 +19,32 @@ class CatalogoApiController extends ApiController
     {
         parent::__construct();
         $this->catalogoModel = new CatalogoModel();
+    }
+
+    /**
+     * Endpoint API para obtener todos los estados.
+     */
+    public function apiGetEstados()
+    {
+        $this->checkAuthAndPermissionApi(
+            'catalogos.ver',
+            'Acceso denegado a la API de catálogos.'
+        );
+
+        try {
+            $estados = $this->catalogoModel->getAll('cat_estados');
+            $this->jsonResponse([
+                'status' => 'success',
+                'data' => $estados,
+            ], 200);
+        } catch (\Exception $e) {
+            error_log("Error en CatalogoController::apiGetEstados(): " . $e->getMessage());
+
+            $this->jsonResponse([
+                'status' => 'error',
+                'message' => 'Error interno del servidor al obtener estados.'
+            ], 500);
+        }
     }
 
     /**
@@ -118,6 +149,40 @@ class CatalogoApiController extends ApiController
         } catch (\Exception $e) {
             error_log("Error en CatalogoController::apiGetAllEstatusGlobalProspecto: " . $e->getMessage());
             $this->jsonResponse(['status' => 'error', 'message' => 'Error al obtener el catálogo de estatus.'], 500);
+        }
+    }
+
+    /**
+     * Endpoint API para obtener todas las administradoras.
+     * Si no tiene permiso para ver los nombres reales verán abreviaturas.
+     */
+    public function apiGetAdministradoras()
+    {
+        $ver_nombres = $this->permissionManager->hasPermission('administradoras.ver_nombres');
+
+        try {
+            $administradoras = $this->catalogoModel->getAll('cat_administradoras');
+
+            $administradoras = array_map(function ($administradora) use ($ver_nombres) {
+
+                if (!$ver_nombres) {
+                    $administradora['nombre'] = $administradora['abreviatura'];
+                }
+
+                return $administradora;
+
+            }, $administradoras);
+
+            $this->jsonResponse([
+                'status' => 'success',
+                'data' => $administradoras,
+            ], 200);
+        } catch (\Exception $e) {
+            error_log("Error en CatalogoController::apiGetAdministradoras(): " . $e->getMessage());
+            $this->jsonResponse([
+                'status' => 'error',
+                'message' => 'Error interno del servidor al obtener administradores.'
+            ], 500);
         }
     }
 }

@@ -1,11 +1,12 @@
 import { Modal } from "../../utils/modal.js";
 import { showAlert } from "../../utils/alerts.js";
+import { fetchData, postData, putData, fetchCatalog } from "../../utils/api.js";
 
 document.addEventListener("DOMContentLoaded", function () {
 	// VARIABLES
-
 	const propiedadesTableBody = document.getElementById("propiedadesTableBody");
 	const propertyFiltersForm = document.getElementById("propertyFiltersForm");
+
 	const paginationLimitInput = document.getElementById("pagination_limit");
 	const paginationOffsetInput = document.getElementById("pagination_offset");
 	const prevPageBtn = document.getElementById("prevPageBtn");
@@ -20,6 +21,28 @@ document.addEventListener("DOMContentLoaded", function () {
 	let currentPage = 1;
 	let itemsPerPage = parseInt(paginationLimitInput.value);
 	let totalItems = 0;
+
+	const statusConfig = {
+		Apartada: {
+			className: "status-apartada",
+			getTooltip: (p) =>
+				`Apartada${p.asignacion_cliente_nombre ? " por: " + p.asignacion_cliente_nombre : ""}`,
+		},
+		Vendida: {
+			className: "status-vendida",
+			getTooltip: (p) =>
+				`Vendida${p.asignacion_cliente_nombre ? " a: " + p.asignacion_cliente_nombre : ""}`,
+		},
+		"En Proceso de Cambio": {
+			className: "status-en-proceso-cambio",
+			getTooltip: (p) => p.estatus_disponibilidad,
+		},
+		Retirada: {
+			className: "status-retirada",
+			getTooltip: (p) => p.estatus_disponibilidad,
+		},
+		Disponible: { className: "status-disponible", getTooltip: (p) => p.estatus_disponibilidad },
+	};
 
 	// EVENTOS
 
@@ -69,45 +92,47 @@ document.addEventListener("DOMContentLoaded", function () {
 	// Función para limpiar y rellenar el select de municipios
 	function populateMunicipios(municipios, selectedMunicipioId = null) {
 		filterMunicipioSelect.innerHTML = '<option value="">Todos</option>';
+
 		municipios.forEach((municipio) => {
 			const option = document.createElement("option");
+
 			option.value = municipio.id;
 			option.textContent = municipio.nombre;
+
 			if (selectedMunicipioId && municipio.id == selectedMunicipioId) {
 				option.selected = true;
 			}
+
 			filterMunicipioSelect.appendChild(option);
 		});
+
 		filterMunicipioSelect.disabled = false;
 	}
 
 	// Función para cargar municipios desde la API
 	async function loadMunicipiosByEstado(estadoId, selectedMunicipioId = null) {
-		filterMunicipioSelect.innerHTML =
-			'<option value="">Cargando municipios...</option>';
+		filterMunicipioSelect.innerHTML = '<option value="">Cargando municipios...</option>';
 		filterMunicipioSelect.disabled = true;
 
 		try {
-			const response = await fetch(
-				`/api/catalogos/municipios?estado_id=${estadoId}`
-			); // Usamos la nueva API
-			const result = await response.json();
+			const result = await fetchCatalog(`municipios?estado_id=${estadoId}`);
 
 			if (result.status === "success") {
 				populateMunicipios(result.data, selectedMunicipioId);
 			} else {
-				showAlert("Error al cargar municipios: " + result.message, "error");
-				filterMunicipioSelect.innerHTML =
-					'<option value="">Error al cargar</option>';
+				showAlert(`Error al cargar municipios: ${result.message}`, "error");
+
+				filterMunicipioSelect.innerHTML = '<option value="">Error al cargar</option>';
 			}
 		} catch (error) {
 			console.error("Fallo de red al cargar municipios:", error);
+
 			showAlert(
 				"No se pudieron cargar los municipios. Error de conexión.",
 				"error"
 			);
-			filterMunicipioSelect.innerHTML =
-				'<option value="">Error de conexión</option>';
+
+			filterMunicipioSelect.innerHTML = '<option value="">Error de conexión</option>';
 		}
 	}
 
@@ -130,91 +155,60 @@ document.addEventListener("DOMContentLoaded", function () {
 			return;
 		}
 
-		propiedades.forEach((propiedad) => {
-			const row = document.createElement("tr");
+		const rowsHtml = propiedades
+			.map((propiedad) => {
+				const estatusDisplay = propiedad.estatus_disponibilidad || "Disponible";
+				const config = statusConfig[estatusDisplay] || statusConfig["Disponible"];
+				const tooltipInfo = config.getTooltip(propiedad);
 
-			row.innerHTML += `<td>${propiedad.id}</td>`;
-			row.innerHTML += `<td>${propiedad.numero_credito}</td>`;
-			row.innerHTML += `<td class="column-direccion">${propiedad.direccion}</td>`;
-			row.innerHTML += `<td>${propiedad.estado_nombre}</td>`;
-			row.innerHTML += `<td>${propiedad.municipio_nombre}</td>`;
+				const precioLista = parseFloat(propiedad.precio_lista).toLocaleString("es-MX", {
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2,
+				});
 
-			row.innerHTML += `<td>$${parseFloat(
-				propiedad.precio_lista
-			).toLocaleString("es-MX", {
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2,
-			})}</td>`;
+				const precioVenta = parseFloat(propiedad.precio_venta).toLocaleString("es-MX", {
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2,
+				});
 
-			row.innerHTML += `<td>$${parseFloat(
-				propiedad.precio_venta
-			).toLocaleString("es-MX", {
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2,
-			})}</td>`;
+				let actionsHtml = `<a href="/propiedades/ver/${propiedad.id}" class="btn btn-primary btn-sm">Gestionar</a>`;
+				if (canDeletePropiedad) {
+					actionsHtml += ` <a href="#" data-id="${propiedad.id}" class="btn btn-danger btn-sm delete-btn">Eliminar</a>`;
+				}
 
-			let estatusDisplay = propiedad.estatus_disponibilidad;
-			let claseEstatus = "";
-			let tooltipInfo = estatusDisplay;
+				return `
+					<tr>
+						<td>${propiedad.id}</td>
+						<td>${propiedad.numero_credito}</td>
+						<td class="column-direccion">${propiedad.direccion}</td>
+						<td>${propiedad.estado_nombre}</td>
+						<td>${propiedad.municipio_nombre}</td>
+						<td>$${precioLista}</td>
+						<td>$${precioVenta}</td>
+						<td><span class="status-badge ${config.className}" title="${tooltipInfo}">${estatusDisplay}</span></td>
+						<td>${propiedad.sucursal_nombre}</td>
+						<td>${propiedad.administradora_nombre}</td>
+						<td><a class="btn btn-info btn-sm" href="${propiedad.mapa_url}" target="_blank">Ver Mapa</a></td>
+						<td class="actions-column">${actionsHtml}</td>
+					</tr>
+				`;
+			})
+			.join("");
 
-			switch (estatusDisplay) {
-				case "Apartada":
-					claseEstatus = "status-apartada";
-					if (propiedad.asignacion_cliente_nombre) {
-						tooltipInfo += " por: " + propiedad.asignacion_cliente_nombre;
-					}
-					break;
-				case "Vendida":
-					claseEstatus = "status-vendida";
-					if (propiedad.asignacion_cliente_nombre) {
-						tooltipInfo += " a: " + propiedad.asignacion_cliente_nombre;
-					}
-					break;
-				case "En Proceso de Cambio":
-					claseEstatus = "status-en-proceso-cambio";
-					break;
-				case "Retirada":
-					claseEstatus = "status-retirada";
-					break;
-				default: // Disponible
-					claseEstatus = "status-disponible";
-					break;
-			}
-
-			row.innerHTML += `
-        <td>
-          <span class="status-badge ${claseEstatus}" title="${tooltipInfo}">
-            ${estatusDisplay}
-          </span>
-        </td>
-      `;
-
-			row.innerHTML += `<td>${propiedad.sucursal_nombre}</td>`;
-			row.innerHTML += `<td>${propiedad.administradora_nombre}</td>`;
-
-			row.innerHTML += `<td><a class="btn btn-info btn-sm" href="${propiedad.mapa_url}" target="_blank">Ver Mapa</a></td>`;
-
-			let actionsHtml = `<a href="/propiedades/ver/${propiedad.id}" class="btn btn-primary btn-sm">Ver</a>`;
-
-			if (canDeletePropiedad) {
-				actionsHtml += `<a href="#" data-id="${propiedad.id}" class="btn btn-danger btn-sm delete-btn">Eliminar</a>`;
-			}
-
-			row.innerHTML += `<td class="actions-column">${actionsHtml}</td>`;
-
-			propiedadesTableBody.appendChild(row);
-		});
+		propiedadesTableBody.innerHTML = rowsHtml;
 	}
 
 	// Función para obtener los filtros seleccionados
 	function getCurrentFilters() {
 		const filters = {};
 		const formData = new FormData(propertyFiltersForm);
+
 		for (const [key, value] of formData.entries()) {
 			if (value !== "") {
 				filters[key] = value;
 			}
 		}
+
 		filters.limit = paginationLimitInput.value;
 		filters.offset = paginationOffsetInput.value;
 
@@ -224,28 +218,27 @@ document.addEventListener("DOMContentLoaded", function () {
 	// Función para obtener las propiedades
 	async function loadProperties() {
 		propiedadesTableBody.innerHTML = `<tr><td colspan="12" class="text-center">Cargando propiedades...</td></tr>`;
+
 		const filters = getCurrentFilters();
 		const queryString = new URLSearchParams(filters).toString();
 
 		try {
-			const response = await fetch(`/api/propiedades?${queryString}`);
-			const result = await response.json();
+			const result = await fetchData(`/api/propiedades?${queryString}`);
 
-			if (result.status === "success") {
-				renderTable(result.data);
-				totalItems = result.total;
-				itemsPerPage = result.limit;
-				updatePaginationControls();
-			} else {
-				showAlert(result.message, "error");
-				propiedadesTableBody.innerHTML = `<tr><td colspan="12" class="text-center">Error al cargar propiedades: ${result.message}</td></tr>`;
-			}
+			renderTable(result.data);
+
+			totalItems = result.total;
+			itemsPerPage = result.limit;
+
+			updatePaginationControls();
 		} catch (error) {
 			console.error("Error al cargar propiedades:", error);
+
 			showAlert(
 				"No se pudieron cargar las propiedades. Intenta de nuevo más tarde.",
 				"error"
 			);
+
 			propiedadesTableBody.innerHTML = `<tr><td colspan="12" class="text-center">No se pudieron cargar las propiedades.</td></tr>`;
 		}
 	}
@@ -254,8 +247,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	function updatePaginationControls() {
 		const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-		currentPage =
-			Math.floor(parseInt(paginationOffsetInput.value) / itemsPerPage) + 1;
+		currentPage = Math.floor(parseInt(paginationOffsetInput.value) / itemsPerPage) + 1;
 
 		paginationInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
 		prevPageBtn.disabled = currentPage === 1;
@@ -268,39 +260,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Función para inicializar el módulo
 	async function initPropertiesModule() {
-		await window.App.Permissions.waitForPermissions();
-
-		loadProperties();
-	}
-
-	async function getSucursales() {
-		try {
-			const response = await fetch("/api/sucursales");
-			const result = await response.json();
-
-			if (result.status === "success") {
-				return result.data;
-			}
-		} catch (error) {
-			console.error("Error al cargar sucursales:", error);
-
-			return [];
-		}
-	}
-
-	async function getAdministradoras() {
-		try {
-			const response = await fetch("/api/administradoras");
-			const result = await response.json();
-
-			if (result.status === "success") {
-				return result.data;
-			}
-		} catch (error) {
-			console.error("Error al cargar administradoras:", error);
-
-			return [];
-		}
+		await window.App.Permissions.waitForPermissions(); // Aseguramos permisos
+		loadProperties(); // Cargamos propiedades iniciales
 	}
 
 	// Función para abrir el modal de carga de cartera
@@ -330,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function () {
 					<div class="form-group">
 						<label for="carga_administradora_id">Administradora:</label>
 						<select id="carga_administradora_id" name="administradora_id" class="form-select" disabled>
-							<option value="">Selecciona una Administradora</option>
+							<option disabled selected value="">Selecciona una Administradora</option>
 						</select>
 					</div>
 				</div>
@@ -348,26 +309,9 @@ document.addEventListener("DOMContentLoaded", function () {
 		Modal.show("Cargar Cartera", formHtml, {
 			size: "lg",
 			confirmBtnText: "Subir archivo",
-			cancelBtnText: "Cancelar",
-			onConfirm: (modalBodyElement) => {
-				const form = modalBodyElement.querySelector("#cargaForm");
+			cancelBtnText: "Cerrar",
 
-				if (form) {
-					const formData = new FormData(form);
-					submitPropertyForm(formData);
-				}
-
-				console.log("Cartera cargada correctamente.");
-
-				showAlert("Cartera cargada correctamente.", "success");
-
-				Modal.hide();
-			},
-			onCancel: () => {
-				console.log("Creación de propiedad cancelada.");
-			},
-
-			onContentReady: (modalBodyElement) => {
+			onContentReady: (modalBodyElement, modalFooterElement) => {
 				const cargaCodigoCartera = modalBodyElement.querySelector(
 					"#carga_codigo_cartera"
 				);
@@ -391,28 +335,34 @@ document.addEventListener("DOMContentLoaded", function () {
 				});
 
 				cargaAdministradoraId.addEventListener("change", () => {
-					cargaAdministradoraId.disabled = false;
-					cargaAdministradoraId.value = "";
-
 					dropzoneFormElement.style.display = "block";
 				});
 
 				if (dropzoneFormElement) {
 					Dropzone.autoDiscover = false;
 
+					// Deshabilitar el botón de confirmación del modal inicialmente
+					const confirmButton = modalFooterElement.closest(".app-modal-footer")?.querySelector(".app-modal-confirm-btn");
+
+					if (confirmButton) {
+						confirmButton.disabled = true;
+						confirmButton.textContent = "Sube un archivo para continuar";
+					}
+
+					console.log('confirmButton', confirmButton);
+
 					const myDropzone = new Dropzone(dropzoneFormElement, {
 						url: "/api/carteras/upload",
 						paramName: "file",
-						maxFilesize: 5, // MB
+						maxFilesize: 5,
 						acceptedFiles: ".xlsx,.csv",
 						addRemoveButton: true,
-						dictDefaultMessage:
-							"Arrastra tu archivo aquí o haz clic para seleccionar.",
+						dictDefaultMessage: "Arrastra tu archivo aquí o haz clic para seleccionar.",
 						dictRemoveFile: "Quitar archivo",
 						dictCancelUpload: "Cancelar subida",
 						dictInvalidFileType: "Solo se permiten archivos .xlsx o .csv.",
-						dictFileTooBig:
-							"El archivo es demasiado grande ({{filesize}}MB). Tamaño máximo: {{maxFilesize}}MB.",
+						dictFileTooBig: "El archivo es demasiado grande ({{filesize}}MB). Tamaño máximo: {{maxFilesize}}MB.",
+						autoProcessQueue: false,
 
 						init: function () {
 							this.on("success", function (file, response) {
@@ -421,15 +371,19 @@ document.addEventListener("DOMContentLoaded", function () {
 									"success"
 								);
 
-								Modal.hide();
+								console.log('Cargando propiedades...')
+
+								// Modal.hide();
+								loadProperties();
 							});
+
 							this.on("error", function (file, { message }, xhr) {
 								console.error("Error al subir archivo:", message, xhr);
+
 								showAlert(`Error al subir archivo: ${message}`, "error");
 
-								// Mensaje de error personalizado en dz-error-message
-								const dzErrorMessage =
-									document.querySelector(".dz-error-message");
+								const dzErrorMessage = document.querySelector(".dz-error-message");
+
 								if (dzErrorMessage) {
 									dzErrorMessage.textContent = message;
 								}
@@ -438,6 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 								if (markButton) {
 									console.log(markButton);
+
 									markButton.addEventListener("click", function () {
 										myDropzone.removeAllFiles();
 									});
@@ -448,54 +403,89 @@ document.addEventListener("DOMContentLoaded", function () {
 								if (this.files.length > 1) {
 									this.removeFile(this.files[0]);
 								}
+
+								if (confirmButton) {
+									confirmButton.disabled = false;
+									confirmButton.textContent = "Subir archivo";
+								}
+
+								console.log('Archivo agregado')
 							});
 
 							this.on("sending", function (file, xhr, formData) {
-								formData.append(
-									"carga_codigo_cartera",
-									cargaCodigoCartera.value
-								);
-								formData.append(
-									"carga_nombre_cartera",
-									cargaNombreCartera.value
-								);
+								formData.append("carga_codigo_cartera", cargaCodigoCartera.value);
+
+								formData.append("carga_nombre_cartera", cargaNombreCartera.value);
+
 								formData.append("carga_sucursal_id", cargaSucursalId.value);
-								formData.append(
-									"carga_administradora_id",
-									cargaAdministradoraId.value
-								);
+
+								formData.append("carga_administradora_id", cargaAdministradoraId.value);
+
+								console.log('Enviando archivo...')
 							});
 						},
 					});
+
+					if (confirmButton) {
+						confirmButton.addEventListener("click", () => {
+							myDropzone.processQueue();
+
+							console.log('Procesando archivos...')
+						});
+					}
 				}
 
-				// cargar catalogos
-
 				const loadCargaSucursales = async () => {
-					await getSucursales().then((sucursales) => {
+					const results = await fetchCatalog("sucursales");
+
+					if (results.status !== "success") {
+						showAlert(results.message, "error");
+						return;
+					}
+
+					const sucursales = results.data;
+
+					if (sucursales) {
 						sucursales.forEach((sucursal) => {
 							const option = document.createElement("option");
+
 							option.value = sucursal.id;
 							option.textContent = sucursal.nombre;
+
 							cargaSucursalId.appendChild(option);
 						});
-					});
+					}
 				};
 
 				const loadCargaAdministradoras = async () => {
-					await getAdministradoras().then((administradoras) => {
+					const results = await fetchCatalog("administradoras");
+
+					console.log(results);
+
+					if (results.length === 0) {
+						return;
+					}
+
+					const administradoras = results.data;
+
+					if (administradoras) {
 						administradoras.forEach((administradora) => {
 							const option = document.createElement("option");
+
 							option.value = administradora.id;
 							option.textContent = administradora.nombre;
+
 							cargaAdministradoraId.appendChild(option);
 						});
-					});
+					}
 				};
 
 				loadCargaSucursales();
 				loadCargaAdministradoras();
 			},
+			onConfirm: async () => {
+				console.log('onConfirm');
+			}
 		});
 	}
 

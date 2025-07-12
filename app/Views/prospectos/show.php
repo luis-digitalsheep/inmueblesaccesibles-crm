@@ -8,7 +8,7 @@
     </div>
 </div>
 
-<div class="alert-container"></div>
+<div id="alert-message-container" class="alert-container"></div>
 
 <div class="card shadow-default mb-4">
     <div class="card-header">
@@ -25,6 +25,7 @@
         <ul class="nav nav-tabs-custom" id="prospectoDetailTabs" role="tablist">
             <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#procesos-venta" type="button">Procesos de Venta</button></li>
             <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#info-general" type="button">Información General</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#documentos" type="button">Documentos</button></li>
         </ul>
     </div>
 
@@ -39,6 +40,12 @@
 
             <div class="tab-pane fade" id="info-general" role="tabpanel">
                 <div id="info-general-container">
+                    <p class="text-muted">Cargando información del prospecto...</p>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="documentos" role="tabpanel">
+                <div id="documentos-container">
                     <p class="text-muted">Cargando información del prospecto...</p>
                 </div>
             </div>

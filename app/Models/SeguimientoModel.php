@@ -78,4 +78,56 @@ class SeguimientoModel
             return [];
         }
     }
+
+    /**
+     * Obtiene todos los seguimientos de un proceso de venta específico.
+     * @param int $procesoVentaId
+     * @return array
+     */
+    public function findByProcesoVentaId(int $procesoVentaId): array
+    {
+        $sql = "SELECT 
+                    s.id, s.tipo_interaccion, s.fecha_interaccion, s.comentarios,
+                    u.nombre as usuario_nombre
+                FROM seguimientos_prospectos_clientes s
+                LEFT JOIN usuarios u ON s.usuario_registra_id = u.id
+                WHERE s.proceso_venta_id = :proceso_venta_id
+                ORDER BY s.fecha_interaccion DESC";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':proceso_venta_id', $procesoVentaId, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en SeguimientoModel::findByProcesoVentaId: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtiene todos los seguimientos de todos los procesos de un cliente.
+     * @param int $clienteId
+     * @return array
+     */
+    public function findAllByClienteId(int $clienteId): array
+    {
+        $procesosSubQuery = "SELECT id FROM procesos_venta WHERE cliente_id = :cliente_id";
+
+        $sql = "SELECT 
+                s.id, s.proceso_venta_id, s.tipo_interaccion, s.fecha_interaccion, s.comentarios,
+                u.nombre as usuario_nombre
+            FROM seguimientos_prospectos_clientes s
+            LEFT JOIN usuarios u ON s.usuario_registra_id = u.id
+            WHERE s.proceso_venta_id IN ({$procesosSubQuery})
+            ORDER BY s.fecha_interaccion DESC";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':cliente_id', $clienteId, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en SeguimientoModel::findAllByClienteId: " . $e->getMessage());
+            return [];
+        }
+    }
 }

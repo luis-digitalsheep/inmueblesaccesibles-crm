@@ -21,8 +21,10 @@ export function toggleEditMode(isEditing, formContainer) {
 
         if (isEditing) {
             input.classList.remove('is-readonly');
+            input.removeAttribute('readonly');
         } else {
             input.classList.add('is-readonly');
+            input.setAttribute('readonly', 'readonly');
         }
     });
 

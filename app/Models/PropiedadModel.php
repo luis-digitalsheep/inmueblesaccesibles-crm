@@ -206,6 +206,8 @@ class PropiedadModel
           p.tiempo_entrega,
           p.precio_lista,
           p.precio_venta,
+          p.cofinavit,
+          p.avaluo_administradora,
           p.comentarios_admin,
           p.mapa_url,
           p.estatus_disponibilidad,
@@ -271,11 +273,107 @@ class PropiedadModel
 
     try {
       $stmt = $this->db->query($sql);
-      
+
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
       error_log("Error en PropiedadModel::findAllAvailableForSelect: " . $e->getMessage());
       return [];
+    }
+  }
+
+  /**
+   * Crea un nuevo registro en la tabla `propiedades` a partir de los datos validados
+   * de una propiedad en revisión.
+   * @param array $data Los datos del formulario de validación.
+   * @return int|false El ID de la nueva propiedad creada o false en caso de error.
+   */
+  public function createFromRevision(int $id_usuario, array $data)
+  {
+    $sql = "INSERT INTO {$this->tableName} (
+          numero_credito,
+          cartera_id,
+          direccion,
+          direccion_extra,
+          fraccionamiento,
+          codigo_postal,
+          estado_id,
+          municipio_id,
+          tipo_vivienda,
+          tipo_inmueble,
+          metros,
+          sucursal_id,
+          administradora_id,
+          cofinavit,
+          avaluo_administradora,
+          precio_lista,
+          precio_venta,
+          etapa_judicial,
+          etapa_judicial_segunda,
+          fecha_etapa_judicial,
+          mapa_url,
+          estatus_disponibilidad,
+          creado_por_usuario_id
+      ) VALUES (
+          :numero_credito,
+          :cartera_id,
+          :direccion,
+          :direccion_extra,
+          :fraccionamiento,
+          :codigo_postal,
+          :estado_id,
+          :municipio_id,
+          :tipo_vivienda,
+          :tipo_inmueble,
+          :metros,
+          :sucursal_id,
+          :administradora_id,
+          :cofinavit,
+          :avaluo_administradora,
+          :precio_lista,
+          :precio_venta,
+          :etapa_judicial,
+          :etapa_judicial_segunda,
+          :fecha_etapa_judicial,
+          :mapa_url,
+          :estatus_disponibilidad,
+          :creado_por_usuario_id
+      )
+    ";
+
+    try {
+      $stmt = $this->db->prepare($sql);
+
+      $stmt->bindValue(':numero_credito', $data['numero_credito'] ?? null);
+      $stmt->bindValue(':cartera_id', $data['cartera_id'] ?? null, PDO::PARAM_INT);
+      $stmt->bindValue(':direccion', $data['direccion'] ?? null);
+      $stmt->bindValue(':direccion_extra', $data['direccion_extra'] ?? null);
+      $stmt->bindValue(':fraccionamiento', $data['fraccionamiento'] ?? null);
+      $stmt->bindValue(':codigo_postal', $data['codigo_postal'] ?? null);
+      $stmt->bindValue(':estado_id', $data['estado_id'] ?? null, PDO::PARAM_INT);
+      $stmt->bindValue(':municipio_id', $data['municipio_id'] ?? null, PDO::PARAM_INT);
+      $stmt->bindValue(':tipo_vivienda', $data['tipo_vivienda'] ?? null);
+      $stmt->bindValue(':tipo_inmueble', $data['tipo_inmueble'] ?? null);
+      $stmt->bindValue(':metros', $data['metros'] ?? null);
+      $stmt->bindValue(':sucursal_id', $data['sucursal_id'] ?? null, PDO::PARAM_INT);
+      $stmt->bindValue(':administradora_id', $data['administradora_id'] ?? null, PDO::PARAM_INT);
+      $stmt->bindValue(':cofinavit', $data['cofinavit'] ?? null);
+      $stmt->bindValue(':avaluo_administradora', $data['avaluo_administradora'] ?? null);
+      $stmt->bindValue(':precio_lista', $data['precio_lista'] ?? null);
+      $stmt->bindValue(':precio_venta', $data['precio_venta'] ?? null);
+      $stmt->bindValue(':etapa_judicial', $data['etapa_judicial'] ?? null);
+      $stmt->bindValue(':etapa_judicial_segunda', $data['etapa_judicial_segunda'] ?? null);
+      $stmt->bindValue(':fecha_etapa_judicial', $data['fecha_etapa_judicial'] ?? null);
+      $stmt->bindValue(':mapa_url', $data['mapa_url'] ?? null);
+      $stmt->bindValue(':estatus_disponibilidad', 'Disponible');
+      $stmt->bindValue(':creado_por_usuario_id', $id_usuario, PDO::PARAM_INT);
+
+      if ($stmt->execute()) {
+        return (int)$this->db->lastInsertId();
+      }
+      return false;
+    } catch (PDOException $e) {
+      error_log("Error en PropiedadModel::createFromRevision: " . $e->getMessage());
+      return false;
     }
   }
 }

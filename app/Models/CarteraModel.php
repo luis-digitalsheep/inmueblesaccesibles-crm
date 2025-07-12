@@ -16,6 +16,7 @@ use PDOException;
 class CarteraModel
 {
     private $db;
+    private $tableName = 'carteras';
 
     public function __construct()
     {
@@ -102,21 +103,41 @@ class CarteraModel
 
     public function fileLoad() {}
 
-    public function findOrCreateByCodigo($codigo, $nombre)
+    /**
+     * Busca o crea una cartera por su código.
+     *
+     * @param int $usuarioId ID del usuario
+     * @param string $codigo Código de la cartera
+     * @param string $nombre Nombre de la cartera
+     * @param int $sucursalId ID de la sucursal
+     * @param int $administradoraId ID de la administradora
+     * @return int|false ID de la cartera encontrada o false en caso de error
+     * @throws \Exception Si ocurre un error al buscar o crear la cartera
+     *  */
+    public function findOrCreateByCodigo($usuarioId, $codigo, $nombre, $sucursalId, $administradoraId)
     {
         try {
-            $stmt = $this->db->prepare("SELECT id FROM carteras WHERE codigo = :codigo");
+            $stmt = $this->db->prepare("SELECT id FROM {$this->tableName} WHERE codigo = :codigo");
+
             $stmt->bindParam(':codigo', $codigo, PDO::PARAM_STR);
+
             $stmt->execute();
+
             $cartera = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($cartera) {
                 return (int)$cartera['id'];
             }
 
-            $stmtInsert = $this->db->prepare("INSERT INTO carteras (codigo, nombre) VALUES (:codigo, :nombre)");
+            $stmtInsert = $this->db->prepare("INSERT INTO {$this->tableName} (sucursal_id, administradora_id, codigo, nombre, creado_por_usuario_id) 
+                VALUES (:sucursal_id, :administradora_id, :codigo, :nombre, :usuario_id)
+            ");
+
+            $stmtInsert->bindParam(':sucursal_id', $sucursalId, PDO::PARAM_INT);
+            $stmtInsert->bindParam(':administradora_id', $administradoraId, PDO::PARAM_INT);
             $stmtInsert->bindParam(':codigo', $codigo, PDO::PARAM_STR);
             $stmtInsert->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+            $stmtInsert->bindParam(':usuario_id', $usuarioId, PDO::PARAM_INT);
 
             if ($stmtInsert->execute()) {
                 return (int)$this->db->lastInsertId();

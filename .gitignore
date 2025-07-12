@@ -1,4 +1,10 @@
 /vendor/
 /node_modules/
 .env
+/storage/
 /public/uploads/
+
+!/storage/.gitkeep
+!/public/uploads/.gitkeep
+
+.vscode/

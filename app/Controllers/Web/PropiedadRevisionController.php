@@ -66,30 +66,27 @@ class PropiedadRevisionController extends WebController
    */
   public function edit(int $id, string $currentRoute = '')
   {
-    $this->checkPermission('validaciones_cartera.validar');
+    $this->checkPermission('validaciones_cartera.ver');
 
-    // 2. Fetch Propiedad en Revisión
     $propiedadRevision = $this->propiedadRevisionModel->getById($id);
 
     if (!$propiedadRevision) {
-      $this->renderErrorPage(404, 'Propiedad en revisión no encontrada.');
+      $this->renderErrorPage(404, 'Registro en revisión no encontrado.');
       return;
     }
 
-    $estados = $this->catalogoModel->getAll('cat_estados', 'nombre');
-    $sucursales = $this->catalogoModel->getAll('cat_sucursales', 'nombre');
-    $administradoras = $this->catalogoModel->getAll('cat_administradoras', 'nombre');
+    $propiedadRevisionId = $propiedadRevision['id'];
 
     $data = [
       'pageTitle' => 'Validar Propiedad de Cartera: ' . $propiedadRevision['numero_credito'],
       'pageDescription' => 'Revise, corrija y complete la información de la propiedad.',
-      'propiedadRevision' => $propiedadRevision,
-      'estados' => $estados,
-      'sucursales' => $sucursales,
-      'administradoras' => $administradoras,
-      // 'formAction' => '/validaciones-cartera/update/' . $id,
+      'propiedadRevisionID' => $propiedadRevisionId,
+
+      'permissions' => [
+        'validaciones_cartera.validar' => true
+      ],
     ];
 
-    $this->render('validaciones-cartera/edit', $data, $currentRoute);
+    $this->render('validaciones-cartera/show', $data, $currentRoute);
   }
 }

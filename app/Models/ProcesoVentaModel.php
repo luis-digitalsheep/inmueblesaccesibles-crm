@@ -114,7 +114,6 @@ class ProcesoVentaModel
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $result ?: null;
-
         } catch (PDOException $e) {
             error_log("Error en ProcesoVentaModel::findById: " . $e->getMessage());
             return null;
@@ -140,6 +139,111 @@ class ProcesoVentaModel
         } catch (PDOException $e) {
             error_log("Error en ProcesoVentaModel::updateStatus: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Asocia un folio de apartado y actualiza el estado de un proceso de venta.
+     * @param int $procesoVentaId
+     * @param string $folio
+     * @param int $nextStatusId
+     * @return bool
+     */
+    public function assignFolioAndUpdateStatus(int $procesoVentaId, string $folio, int $nextStatusId): bool
+    {
+        $sql = "UPDATE procesos_venta 
+                SET folio_apartado = :folio, estatus_proceso_id = :next_status_id 
+                WHERE id = :id";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':folio', $folio);
+            $stmt->bindParam(':next_status_id', $nextStatusId, PDO::PARAM_INT);
+            $stmt->bindParam(':id', $procesoVentaId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::assignFolioAndUpdateStatus: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene los datos necesarios para generar el folio y el PDF.
+     * @param int $id El ID del proceso de venta.
+     * @return array|null Datos del proceso con abreviaturas.
+     */
+    public function findForFolioGeneration(int $id): ?array
+    {
+        $sql = "SELECT 
+                    pv.id,
+                    pv.usuario_responsable_id,
+                    pro.nombre as prospecto_nombre,
+                    prop.direccion as propiedad_direccion,
+                    prop.precio_venta as propiedad_precio_venta,
+                    s.abreviatura as sucursal_abreviatura,
+                    s.id as sucursal_id,
+                    a.abreviatura as administradora_abreviatura
+                FROM procesos_venta pv
+                JOIN prospectos pro ON pv.prospecto_id = pro.id
+                JOIN propiedades prop ON pv.propiedad_id = prop.id
+                JOIN cat_sucursales s ON pro.sucursal_id = s.id
+                JOIN cat_administradoras a ON prop.administradora_id = a.id
+                WHERE pv.id = :id";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::findForFolioGeneration: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Reasigna todos los procesos de venta de un prospecto a un nuevo cliente.
+     * @param int $prospectoId El ID del prospecto de origen.
+     * @param int $clienteId El ID del nuevo cliente.
+     * @return bool True si la actualización fue exitosa.
+     */
+    public function reassignProcesosToCliente(int $prospectoId, int $clienteId): bool
+    {
+        $sql = "UPDATE procesos_venta SET cliente_id = :cliente_id WHERE prospecto_id = :prospecto_id";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':cliente_id', $clienteId, PDO::PARAM_INT);
+            $stmt->bindParam(':prospecto_id', $prospectoId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::reassignProcesosToCliente: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene todos los procesos de venta asociados a un cliente.
+     * @param int $clienteId
+     * @return array
+     */
+    public function findAllByClienteId(int $clienteId): array
+    {
+        $sql = "SELECT 
+                pv.id, pv.estatus_proceso_id, pv.is_active, pv.created_at,
+                p.id as propiedad_id, p.direccion as propiedad_direccion,
+                cep.nombre as estatus_nombre
+            FROM procesos_venta pv
+            LEFT JOIN propiedades p ON pv.propiedad_id = p.id
+            LEFT JOIN cat_estatus_prospeccion cep ON pv.estatus_proceso_id = cep.id
+            WHERE pv.cliente_id = :cliente_id
+            ORDER BY pv.created_at DESC";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':cliente_id', $clienteId, PDO::PARAM_INT);
+            $stmt->execute();
+     
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::findAllByClienteId: " . $e->getMessage());
+            return [];
         }
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+
 use FastRoute\RouteCollector;
 
 use App\Controllers\Web\AuthController;
@@ -8,6 +9,10 @@ use App\Controllers\Web\PropiedadController;
 use App\Controllers\Web\PropiedadRevisionController;
 use App\Controllers\Web\ProspectoController;
 use App\Controllers\Web\TestController;
+use App\Controllers\Web\DocumentoController;
+use App\Controllers\Web\ProcesoVentaController;
+use App\Controllers\Web\FolioApartadoController;
+use App\Controllers\Web\ClienteController;
 
 /**
  * Define las rutas web (de navegación) de la aplicación.
@@ -31,10 +36,13 @@ return function (RouteCollector $r) {
     $r->addRoute('GET', '/prospectos', [ProspectoController::class, 'index']);
     $r->addRoute('GET', '/prospectos/ver/{id:\d+}', [ProspectoController::class, 'show']);
 
-    $r->addRoute('GET', '/clientes', [TestController::class, 'index']);
+    $r->addRoute('GET', '/procesos-venta/ver/{id:\d+}', [ProcesoVentaController::class, 'show']);
+
+    $r->addRoute('GET', '/clientes', [ClienteController::class, 'index']);
+    $r->addRoute('GET', '/clientes/ver/{id:\d+}', [ClienteController::class, 'show']);
 
     $r->addRoute('GET', '/validaciones-cartera', [PropiedadRevisionController::class, 'index']);
-    $r->addRoute('GET', '/validaciones-cartera/validar/{id:\d+}', [PropiedadRevisionController::class, 'edit']);
+    $r->addRoute('GET', '/validacion-cartera/validar/{id:\d+}', [PropiedadRevisionController::class, 'edit']);
 
     $r->addRoute('GET', '/validaciones-pagos', [TestController::class, 'index']);
 
@@ -43,6 +51,7 @@ return function (RouteCollector $r) {
     $r->addRoute('GET', '/validaciones-contratos', [TestController::class, 'index']);
 
     $r->addRoute('GET', '/folios', [TestController::class, 'index']);
+    $r->addRoute('GET', '/folios-apartado/descargar/{id:\d+}', [FolioApartadoController::class, 'descargar']);
 
     $r->addRoute('GET', '/reporte-ejemplo', [TestController::class, 'index']);
 
@@ -55,4 +64,6 @@ return function (RouteCollector $r) {
     $r->addRoute('GET', '/sucursales', [TestController::class, 'index']);
 
     $r->addRoute('GET', '/permisos', [TestController::class, 'index']);
+
+    $r->addRoute('GET', '/documentos/descargar/{id:\d+}', [DocumentoController::class, 'descargar']);
 };

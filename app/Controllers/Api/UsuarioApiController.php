@@ -18,10 +18,24 @@ class UsuarioApiController extends ApiController
 
     public function apiGetAll()
     {
-        $this->jsonResponse([
-            'status' => 'success',
-            'data' => [],
-        ]);
+        $filters = [];
+
+        if (!$this->permissionManager->hasPermission('usuarios.ver_todos')) {
+            $filters['id'] = $this->permissionManager->getUserId();
+        };
+
+        try {
+            $usuarios = $this->usuarioModel->getAll($filters);
+
+            $this->jsonResponse([
+                'status' => 'success',
+                'data' => $usuarios,
+            ], 200);
+        } catch (\Exception $e) {
+            error_log("Error en UsuarioController::apiGetAll: " . $e->getMessage());
+
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error interno del servidor al obtener usuarios.'], 500);
+        }
     }
 
     /**
@@ -29,7 +43,7 @@ class UsuarioApiController extends ApiController
      */
     public function apiGetSimpleList()
     {
-        $this->checkAuthAndPermissionApi('usuarios.view_list');
+        // $this->checkAuthAndPermissionApi('usuarios.view_list');
 
         try {
             // Llama al método del modelo que preparamos.

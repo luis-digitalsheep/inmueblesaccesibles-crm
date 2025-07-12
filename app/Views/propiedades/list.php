@@ -26,9 +26,9 @@ $currentFilters = $_GET ?? [];
 
   <div class="page-actions">
     <?php if ($canCreatePropiedad): ?>
-      <a href="/propiedades/crear" class="btn btn-primary">
+      <!-- <a href="/propiedades/crear" class="btn btn-primary">
         <i class="icon-plus"></i> Nueva Propiedad
-      </a>
+      </a> -->
     <?php endif; ?>
     <?php if ($canLoadCartera): ?>
       <a href="/propiedades/cargar-cartera" class="btn btn-secondary" id="loadCarteraButton">

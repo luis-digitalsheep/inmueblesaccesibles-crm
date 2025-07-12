@@ -97,7 +97,7 @@ class ModalManager {
 		document.body.style.overflow = "hidden";
 
 		if (typeof options.onContentReady === "function") {
-			setTimeout(() => options.onContentReady(this._modalBodyElement), 50);
+			setTimeout(() => options.onContentReady(this._modalBodyElement, this._modalFooterElement), 50);
 		}
 	}
 

@@ -56,8 +56,7 @@ function renderInfoGeneral(propiedad, catalogos) {
  * @param {object} propiedad - El objeto con los datos de la propiedad.
  * @param {object} catalogos - Un objeto que contiene los catálogos necesarios, ej. { estatusJuridico: [...] }.
  */
-function renderInfoFinanciera(propiedad, catalogos) {
-    const { estatusJuridico = [], tiposCredito = [] } = catalogos; // Extraemos los catálogos que necesitamos
+function renderInfoFinanciera(propiedad) {
     const container = document.getElementById('info-financiera-container');
     if (!container) return;
 
@@ -93,8 +92,8 @@ function renderInfoFinanciera(propiedad, catalogos) {
                         <input type="text" name="avaluo_administradora" class="form-input is-readonly input-currency" value="${formatCurrency(propiedad.avaluo_administradora)}" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="avaluo_comercial" class="form-label">Avalúo Comercial</label>
-                        <input type="text" name="avaluo_comercial" class="form-input is-readonly input-currency" value="${formatCurrency(propiedad.avaluo_comercial)}" readonly>
+                        <label for="cofinavit" class="form-label">COFINAVIT</label>
+                        <input type="text" name="cofinavit" class="form-input is-readonly" value="${propiedad.cofinavit || ''}" readonly>
                     </div>
                 </div>
             </div>
@@ -102,24 +101,8 @@ function renderInfoFinanciera(propiedad, catalogos) {
             <div class="form-section">
                 <h5 class="form-section-title">Información Legal</h5>
                 <div class="form-columns cols-2">
-                    <div class="form-group">
-                        <label for="estatus_juridico_id" class="form-label">Estatus Jurídico</label>
-                        <select name="estatus_juridico_id" class="form-select is-readonly" disabled>
-                            <option value="">No especificado</option>
-                            ${estatusJuridico.map(e => `<option value="${e.id}" ${propiedad.estatus_juridico_id == e.id ? 'selected' : ''}>${e.nombre}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="tipo_credito_id" class="form-label">Tipo de Crédito</label>
-                        <select name="tipo_credito_id" class="form-select is-readonly" disabled>
-                            <option value="">No especificado</option>
-                            ${tiposCredito.map(t => `<option value="${t.id}" ${propiedad.tipo_credito_id == t.id ? 'selected' : ''}>${t.nombre}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="cofinavit" class="form-label">COFINAVIT</label>
-                        <input type="text" name="cofinavit" class="form-input is-readonly" value="${propiedad.cofinavit || ''}" readonly>
-                    </div>
+                    
+
                 </div>
             </div>
         </form>
@@ -202,32 +185,30 @@ async function initPage() {
             propiedad,
             sucursales,
             administradoras,
-            estatusJuridico,
-            tiposCredito
         ] = await Promise.all([
             fetchData(`/api/propiedades/${propiedadId}`),
             fetchCatalog('sucursales'),
             fetchCatalog('administradoras'),
-            fetchCatalog('estatus-juridico'),
-            fetchCatalog('tipos-credito')
         ]);
 
-        originalPropiedadData = propiedad;
-        pageCatalogos = { sucursales, administradoras, estatusJuridico, tiposCredito };
+        originalPropiedadData = propiedad.data;
+        
 
-        pageTitleElement.textContent = `Propiedad: ${propiedad.direccion}`;
-        pageDescriptionElement.textContent = `ID: ${propiedad.id} | Número de Crédito: ${propiedad.numero_credito}`;
+        pageCatalogos = { 'sucursales': sucursales.data, 'administradoras': administradoras.data };
 
-        renderInfoGeneral(propiedad, pageCatalogos);
-        renderInfoFinanciera(propiedad, pageCatalogos);
-        renderFotosComentarios(propiedad);
+        pageTitleElement.textContent = `Propiedad: ${originalPropiedadData.direccion}`;
+        pageDescriptionElement.textContent = `ID: ${originalPropiedadData.id} | Número de Crédito: ${originalPropiedadData.numero_credito}`;
 
-        if (propiedad.cliente_id) {
+        renderInfoGeneral(originalPropiedadData, pageCatalogos);
+        renderInfoFinanciera(originalPropiedadData, pageCatalogos);
+        renderFotosComentarios(originalPropiedadData);
+
+        if (originalPropiedadData.cliente_id) {
             clienteAsociadoTab.style.display = 'list-item';
             // fetch adicional para los detalles del cliente si es necesario
             // const cliente = await fetchData(`/api/clientes/${propiedad.cliente_id}`);
             // renderClienteAsociado(cliente);
-            clienteAsociadoContainer.innerHTML = `<p>Cliente asociado: <a href="/clientes/ver/${propiedad.cliente_id}">${propiedad.cliente_nombre_asociado}</a></p>`;
+            clienteAsociadoContainer.innerHTML = `<p>Cliente asociado: <a href="/clientes/ver/${originalPropiedadData.cliente_id}">${originalPropiedadData.cliente_nombre_asociado}</a></p>`;
         }
 
         if (window.GLightbox) {

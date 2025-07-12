@@ -3,7 +3,8 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\ApiController;
-
+use App\Models\ClienteModel;
+use App\Models\ProcesoVentaModel;
 use App\Models\ProspectoModel;
 use App\Models\SeguimientoModel;
 
@@ -11,12 +12,17 @@ class ProspectoApiController extends ApiController
 {
     private $prospectoModel;
     private $seguimientoModel;
+    private $procesoVentaModel;
+    private $clienteModel;
+
 
     public function __construct()
     {
         parent::__construct();
         $this->prospectoModel = new ProspectoModel();
         $this->seguimientoModel = new SeguimientoModel();
+        $this->procesoVentaModel = new ProcesoVentaModel();
+        $this->clienteModel = new ClienteModel();
     }
 
     /**
@@ -96,7 +102,6 @@ class ProspectoApiController extends ApiController
         }
     }
 
-
     /**
      * API: Añade una nueva entrada de seguimiento a un prospecto.
      * POST /api/prospectos/{id}/seguimientos
@@ -162,119 +167,109 @@ class ProspectoApiController extends ApiController
         }
     }
 
-    // public function store()
-    // {
-    //     $this->checkPermission('prospectos.crear');
-    //     // Validación de datos de $_POST
-    //     $data = [
-    //         'nombre' => trim($_POST['nombre'] ?? ''),
-    //         'celular' => trim($_POST['celular'] ?? ''),
-    //         'email' => filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL),
-    //         'usuario_responsable_id' => filter_var($_POST['usuario_responsable_id'] ?? null, FILTER_VALIDATE_INT) ?: $this->permissionManager->getUserId(), // Asignar al usuario actual por defecto
-    //         'sucursal_id' => filter_var($_POST['sucursal_id'] ?? null, FILTER_VALIDATE_INT) ?: $this->permissionManager->getSucursalId(), // Sucursal del usuario actual por defecto
-    //         'dial_code' => trim($_POST['dial_code'] ?? '52'), // Default MX
-    //         'pais_code' => trim($_POST['pais_code'] ?? 'MX'), // Default MX
-    //         'estatus_prospeccion_id' => filter_var($_POST['estatus_prospeccion_id'] ?? 1, FILTER_VALIDATE_INT) ?: 1, // Default 'Contacto Inicial'
-    //     ];
+    public function apiCreate()
+    {
+        $this->checkAuthAndPermissionApi('prospectos.crear');
 
-    //     if (empty($data['nombre']) || empty($data['celular']) || empty($data['usuario_responsable_id']) || empty($data['sucursal_id'])) {
-    //         $_SESSION['flash_error_message'] = 'Nombre, celular, responsable y sucursal son obligatorios.';
+        $jsonInput = file_get_contents('php://input');
+        $input = json_decode($jsonInput, true);
 
-    //         $this->redirect('/prospectos/crear');
-    //         return;
-    //     }
+        $data = [
+            'nombre' => trim($input['nombre'] ?? ''),
+            'celular' => trim($input['celular'] ?? ''),
+            'email' => filter_var(trim($input['email'] ?? ''), FILTER_SANITIZE_EMAIL),
+            'usuario_responsable_id' => $input['usuario_responsable_id'] ?? $this->permissionManager->getUserId(),
+            'sucursal_id' => $input['sucursal_id'] ?? $this->permissionManager->getSucursalId(),
+            'dial_code' => trim($input['dial_code'] ?? '52'),
+            'pais_code' => trim($input['pais_code'] ?? 'MX'),
+            'estatus_prospeccion_id' => filter_var($input['estatus_prospeccion_id'] ?? 1, FILTER_VALIDATE_INT) ?: 1
+        ];
 
-    //     $prospectoId = $this->prospectoModel->create($data);
+        error_log('$data: ' . json_encode($data));
 
-    //     if ($prospectoId) {
-    //         $_SESSION['flash_success_message'] = 'Prospecto creado con éxito. ID: ' . $prospectoId;
-    //         $this->redirect('/prospectos'); // O a /prospectos/ver/{$prospectoId}
-    //     } else {
-    //         $_SESSION['flash_error_message'] = 'Error al crear el prospecto.';
-    //         $this->redirect('/prospectos/crear');
-    //     }
-    // }
+        if (empty($data['nombre']) || empty($data['celular']) || empty($data['usuario_responsable_id']) || empty($data['sucursal_id'])) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Todos los campos son obligatorios.'], 400);
+            return;
+        }
 
-    // /**
-    //  * Muestra el formulario para editar un prospecto existente.
-    //  */
-    // public function edit(int $id, string $currentRoute = '')
-    // {
-    //     $this->checkPermission('prospectos.editar');
-    //     $prospecto = $this->prospectoModel->findById($id);
-    //     if (!$prospecto) {
-    //         $this->renderErrorPage(404, 'Prospecto no encontrado.');
-    //         return;
-    //     }
-    //     // Podrías añadir un chequeo de permiso para editar solo prospectos de su sucursal si no es admin/gerente global
-    //     // if (!$this->permissionManager->hasPermission('prospectos.editar.todos') && $prospecto['sucursal_id'] != $this->permissionManager->getSucursalId()){ ... }
+        try {
+            $prospectoId = $this->prospectoModel->create($data);
 
-    //     $this->_getFormDependencies($data);
-    //     $data['pageTitle'] = 'Editar Prospecto: ' . htmlspecialchars($prospecto['nombre']);
-    //     $data['pageDescription'] = 'Actualiza la información del prospecto.';
-    //     $data['formAction'] = '/prospectos/actualizar/' . $id;
-    //     $data['prospecto'] = $prospecto;
-    //     $data['currentRoute'] = $currentRoute;
+            $this->jsonResponse(['status' => 'success', 'data' => ['prospecto_id' => $prospectoId]], 201);
+        } catch (\Exception $e) {
+            error_log("Error en ProspectoController::apiCreate: " . $e->getMessage());
 
-    //     $this->render('prospectos/edit', $data, $currentRoute);
-    // }
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error al crear el prospecto.'], 500);
+            return;
+        }
+    }
 
-    // /**
-    //  * Actualiza un prospecto en la base de datos.
-    //  */
-    // public function update(int $id)
-    // {
-    //     $this->checkPermission('prospectos.editar');
-    //     $prospecto = $this->prospectoModel->findById($id); // Para verificar que existe
-    //     if (!$prospecto) {
-    //         $_SESSION['flash_error_message'] = 'Prospecto no encontrado.';
-    //         $this->redirect('/prospectos');
-    //         return;
-    //     }
-    //     // TODO: Lógica de permisos de edición más granular si es necesario
+    public function apiUpdate(int $id)
+    {
+        $this->checkAuthAndPermissionApi('prospectos.editar');
 
-    //     $data = [ /* Similar a store(), pero tomando datos de $_POST */
-    //         'nombre' => trim($_POST['nombre'] ?? ''),
-    //         // ... todos los campos ...
-    //         'estatus_prospeccion_id' => filter_var($_POST['estatus_prospeccion_id'] ?? null, FILTER_VALIDATE_INT) ?: $prospecto['estatus_prospeccion_id'],
-    //         'cliente_id' => filter_var($_POST['cliente_id'] ?? $prospecto['cliente_id'], FILTER_VALIDATE_INT) ?: null, // Si se convierte a cliente
-    //     ];
-    //     // TODO: Validación robusta
+        $jsonInput = file_get_contents('php://input');
+        $input = json_decode($jsonInput, true);
 
-    //     if ($this->prospectoModel->update($id, $data)) {
-    //         $_SESSION['flash_success_message'] = 'Prospecto actualizado con éxito.';
-    //         $this->redirect('/prospectos'); // O a /prospectos/editar/{$id}
-    //     } else {
-    //         $_SESSION['flash_error_message'] = 'Error al actualizar el prospecto.';
-    //         $this->redirect('/prospectos/editar/' . $id);
-    //     }
-    // }
+        error_log("ID: " . $id);
 
-    // /**
-    //  * Elimina un prospecto.
-    //  */
-    // public function delete(int $id)
-    // {
-    //     $this->checkPermission('prospectos.eliminar');
-    //     // TODO: Lógica de permisos de eliminación más granular si es necesario
+        try {
+            $data = [
+                'nombre' => trim($input['nombre'] ?? ''),
+                'celular' => trim($input['celular'] ?? ''),
+                'email' => filter_var(trim($input['email'] ?? ''), FILTER_SANITIZE_EMAIL),
+                'usuario_responsable_id' => $input['usuario_responsable_id'] ?? $this->permissionManager->getUserId(),
+                'sucursal_id' => $input['sucursal_id'] ?? $this->permissionManager->getSucursalId(),
+            ];
 
-    //     if ($this->prospectoModel->delete($id)) {
-    //         $_SESSION['flash_success_message'] = 'Prospecto eliminado con éxito.';
-    //     } else {
-    //         $_SESSION['flash_error_message'] = 'Error al eliminar el prospecto.';
-    //     }
-    //     $this->redirect('/prospectos');
-    // }
+            $this->prospectoModel->update($id, $data);
 
-    // /**
-    //  * Método privado para cargar dependencias comunes para los formularios create/edit.
-    //  */
-    // private function _getFormDependencies(array &$data)
-    // {
-    //     // TODO: Implementar $this->usuarioModel->getVendedoresActivos() o similar
-    //     $data['usuariosResponsables'] = [];
-    //     $data['sucursales'] = $this->catalogoModel->getAll('cat_sucursales');
-    //     $data['estatusProspeccion'] = $this->catalogoModel->getAll('cat_estatus_prospeccion', 'orden');
-    //     $data['paisesConCodigo'] = [['codigo' => 'MX', 'dial' => '52', 'nombre' => 'México']];
-    // }
+            $this->jsonResponse(['status' => 'success', 'message' => 'Prospecto actualizado con éxito.'], 200);
+        } catch (\Exception $e) {
+            error_log("Error en ProspectoController::apiUpdate: " . $e->getMessage());
+
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error al actualizar el prospecto.'], 500);
+        }
+    }
+
+    /**
+     * API: Convierte un prospecto en cliente.
+     * @param int $prospectoId
+     */
+    public function convertToCliente(int $prospectoId)
+    {
+        $this->checkAuthAndPermissionApi('clientes.convertir');
+        $userId = $this->permissionManager->getUserId();
+
+        try {
+            $prospecto = $this->prospectoModel->findById($prospectoId);
+
+            if (!$prospecto) throw new \Exception('Prospecto no encontrado.');
+            if ($prospecto['cliente_id']) throw new \Exception('Este prospecto ya ha sido convertido a cliente.');
+
+            // Crear el nuevo registro de cliente
+            $prospecto['user_id'] = $userId;
+            $clienteId = $this->clienteModel->createFromProspecto($prospecto);
+            
+            if (!$clienteId) throw new \Exception('No se pudo crear el registro del cliente.');
+
+            // Actualizar el prospecto para enlazarlo al nuevo cliente
+            $this->prospectoModel->linkToCliente($prospectoId, $clienteId); // Necesitarás este método en ProspectoModel
+
+            // Reasignar todos los procesos de venta del prospecto al nuevo cliente
+            $this->procesoVentaModel->reassignProcesosToCliente($prospectoId, $clienteId);
+
+            // Actualizar el estado global del prospecto a "Convertido"
+            $this->prospectoModel->updateGlobalStatus($prospectoId, 4);
+
+            $this->jsonResponse([
+                'status' => 'success',
+                'message' => 'Prospecto convertido a Cliente con éxito.',
+                'data' => ['cliente_id' => $clienteId]
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error al convertir prospecto: " . $e->getMessage());
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error interno al convertir el prospecto.'], 500);
+        }
+    }
 }

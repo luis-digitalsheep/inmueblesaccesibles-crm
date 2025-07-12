@@ -112,7 +112,7 @@
                         <div class="filters-grid">
                             <div class="form-group"><label for="avaluo_administradora" class="form-label">Avalúo:</label><input type="text" id="avaluo_administradora" name="avaluo_administradora" class="form-input input-currency" value="<?php echo htmlspecialchars(number_format((float)($propiedadRevision['avaluo_administradora'] ?? 0), 2, '.', ',')); ?>"></div>
                             <div class="form-group"><label for="precio_lista" class="form-label">Precio Lista:</label><input type="text" id="precio_lista" name="precio_lista" class="form-input input-currency" value="<?php echo htmlspecialchars(number_format((float)($propiedadRevision['precio_lista'] ?? 0), 2, '.', ',')); ?>"></div>
-                            <div class="form-group"><label for="cofinavit" class="form-label">COFINAVIT:</label><input type="text" id="cofinavit" name="cofinavit" class="form-input" value="<?php echo htmlspecialchars($propiedadRevision['cofinavit'] ?? ''); ?>"></div>
+                            <div class="form-group"><label for="cofinavit" class="form-label">COFINAVIT:</label><input type="text" id="cofinavit" name="cofinavit" class="form-input input-currency" value="<?php echo htmlspecialchars(number_format((float)($propiedadRevision['cofinavit'] ?? 0), 2, '.', ',')); ?>"></div>
                         </div>
                         </fieldset>
 

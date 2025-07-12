@@ -248,24 +248,19 @@ class ProspectoModel
                 celular = :celular,
                 email = :email,
                 usuario_responsable_id = :usuario_responsable_id,
-                sucursal_id = :sucursal_id,
-                dial_code = :dial_code,
-                pais_code = :pais_code,
+                sucursal_id = :sucursal_id
             WHERE id = :id
         ";
 
         try {
             $stmt = $this->db->prepare($sql);
 
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->bindParam(':id', $id);
             $stmt->bindParam(':nombre', $data['nombre']);
             $stmt->bindParam(':celular', $data['celular']);
             $stmt->bindParam(':email', $data['email']);
             $stmt->bindParam(':usuario_responsable_id', $data['usuario_responsable_id'], PDO::PARAM_INT);
             $stmt->bindParam(':sucursal_id', $data['sucursal_id'], PDO::PARAM_INT);
-            $stmt->bindParam(':dial_code', $data['dial_code']);
-            $stmt->bindParam(':pais_code', $data['pais_code']);
-            $stmt->bindParam(':estatus_prospeccion_id', $data['estatus_prospeccion_id'], PDO::PARAM_INT);
 
             return $stmt->execute();
         } catch (PDOException $e) {
@@ -282,16 +277,41 @@ class ProspectoModel
     public function updateGlobalStatus(int $prospectoId, int $newStatusId): bool
     {
         $sql = "UPDATE prospectos SET estatus_global_id = :new_status_id WHERE id = :id";
+
         try {
             $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':new_status_id', $newStatusId, PDO::PARAM_INT);
             $stmt->bindParam(':id', $prospectoId, PDO::PARAM_INT);
+
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error en ProspectoModel::updateGlobalStatus: " . $e->getMessage());
             return false;
         }
     }
+
+    /**
+     * Enlaza un prospecto existente a un registro de cliente recién creado.
+     * @param int $prospectoId El ID del prospecto que se va a actualizar.
+     * @param int $clienteId El ID del nuevo cliente al que se va a enlazar.
+     * @return bool True si la actualización fue exitosa, false en caso contrario.
+     */
+    public function linkToCliente(int $prospectoId, int $clienteId): bool
+    {
+        $sql = "UPDATE {$this->tableName} SET cliente_id = :cliente_id WHERE id = :prospecto_id";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':cliente_id', $clienteId, PDO::PARAM_INT);
+            $stmt->bindParam(':prospecto_id', $prospectoId, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error en ProspectoModel::linkToCliente: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Elimina un prospecto.

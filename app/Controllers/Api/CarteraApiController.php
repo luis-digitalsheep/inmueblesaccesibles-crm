@@ -15,7 +15,7 @@ class CarteraApiController extends ApiController
     private $propiedadRevisionModel;
     private $spreadsheetService;
 
-    private function __construct()
+    public function __construct()
     {
         parent::__construct();
         $this->carteraModel = new CarteraModel();
@@ -57,6 +57,8 @@ class CarteraApiController extends ApiController
             'No tienes permiso para cargar carteras.'
         );
 
+        $usuarioId = $this->permissionManager->getUserId();
+
         if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
             $this->jsonResponse(['status' => 'error', 'message' => 'Error en la subida del archivo o archivo no enviado.'], 400);
         }
@@ -79,7 +81,7 @@ class CarteraApiController extends ApiController
             $this->jsonResponse(['status' => 'error', 'message' => 'Formato de archivo no permitido. Solo .xlsx o .csv.'], 400);
         }
 
-        $carteraId = $this->carteraModel->findOrCreateByCodigo($codigoCartera, $nombreCartera);
+        $carteraId = $this->carteraModel->findOrCreateByCodigo($usuarioId, $codigoCartera, $nombreCartera, $sucursalId, $administradoraId);
 
         if (!$carteraId) {
             $this->jsonResponse(['status' => 'error', 'message' => 'No se pudo crear o encontrar la cartera.'], 500);
@@ -136,14 +138,14 @@ class CarteraApiController extends ApiController
             }
 
             // Limpiar y formatear valores, quitar símbolos de moneda, comas y convertir a float.
-            foreach (['avaluo_administradora', 'precio_lista'] as $priceField) {
+            foreach (['avaluo_administradora', 'precio_lista', 'cofinavit'] as $priceField) {
                 if (isset($propiedadData[$priceField])) {
                     $cleanedValue = preg_replace('/[^\d.]/', '', $propiedadData[$priceField]);
                     $propiedadData[$priceField] = !empty($cleanedValue) ? (float)$cleanedValue : null;
                 }
             }
 
-            $revisionId = $this->propiedadRevisionModel->createRevision($propiedadData);
+            $revisionId = $this->propiedadRevisionModel->createRevision($usuarioId, $propiedadData);
 
             if ($revisionId) {
                 $filasInsertadas++;

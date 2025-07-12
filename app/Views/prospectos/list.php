@@ -13,7 +13,7 @@ $canCreateProspecto = $canCreateProspecto ?? false;
     </div>
     <?php if ($canCreateProspecto): ?>
         <div class="page-actions">
-            <button id="btnNuevoProspecto" class="btn btn-primary"><i class="fas fa-plus"></i> Nuevo Prospecto </button>
+            <button id="btnNuevoProspecto" class="btn btn-primary">Nuevo Prospecto </button>
         </div>
     <?php endif; ?>
 </div>
@@ -79,4 +79,4 @@ $canCreateProspecto = $canCreateProspecto ?? false;
     </div>
 </div>
 
-<script type="module" src="/assets/js/prospectos.js"></script>
+<script type="module" src="/assets/js/pages/prospectos/list.js"></script>
