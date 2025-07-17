@@ -462,7 +462,7 @@ async function initPage() {
             fetchData(`/api/prospectos/${prospectoId}`),
             fetchData(`/api/prospectos/${prospectoId}/procesos-venta`),
             fetchCatalog('estatus-global-prospecto'),
-            fetchData('/api/usuarios'),
+            fetchData('/api/usuarios/simple-list'),
             fetchCatalog('sucursales'),
             fetchData(`/api/prospectos/${prospectoId}/documentos`)
         ]);

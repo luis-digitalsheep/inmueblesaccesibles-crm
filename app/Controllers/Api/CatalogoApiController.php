@@ -170,12 +170,37 @@ class CatalogoApiController extends ApiController
                 }
 
                 return $administradora;
-
             }, $administradoras);
 
             $this->jsonResponse([
                 'status' => 'success',
                 'data' => $administradoras,
+            ], 200);
+        } catch (\Exception $e) {
+            error_log("Error en CatalogoController::apiGetAdministradoras(): " . $e->getMessage());
+            $this->jsonResponse([
+                'status' => 'error',
+                'message' => 'Error interno del servidor al obtener administradores.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Endpoint API para obtener todos los roles.
+     */
+    public function apiGetRoles()
+    {
+        $this->checkAuthAndPermissionApi(
+            'catalogos.ver',
+            'Acceso denegado a la API de catálogos.'
+        );
+
+        try {
+            $roles = $this->catalogoModel->getAll('cat_roles');
+
+            $this->jsonResponse([
+                'status' => 'success',
+                'data' => $roles,
             ], 200);
         } catch (\Exception $e) {
             error_log("Error en CatalogoController::apiGetAdministradoras(): " . $e->getMessage());

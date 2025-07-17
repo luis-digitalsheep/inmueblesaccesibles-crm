@@ -27,11 +27,19 @@ return function (RouteCollector $api) {
     $api->addRoute('GET', '/auth/permissions', [AuthApiController::class, 'apiGetUserPermissions']);
 
     // --- API de Usuarios ---
-    $api->addRoute('GET', '/usuarios', [UsuarioApiController::class, 'apiGetAll']);
+    $api->addRoute('GET', '/usuarios', [UsuarioApiController::class, 'index']);
+    $api->addRoute('POST', '/usuarios', [UsuarioApiController::class, 'store']);
+    $api->addRoute('GET', '/usuarios/{id:\d+}', [UsuarioApiController::class, 'show']);
+    $api->addRoute('PUT', '/usuarios/{id:\d+}', [UsuarioApiController::class, 'update']);
+    $api->addRoute('DELETE', '/usuarios/{id:\d+}', [UsuarioApiController::class, 'destroy']);
     $api->addRoute('GET', '/usuarios/simple-list', [UsuarioApiController::class, 'apiGetSimpleList']);
 
     // --- API de Sucursales ---
-    $api->addRoute('GET', '/sucursales', [SucursalApiController::class, 'apiGetAll']);
+    $api->addRoute('GET', '/sucursales', [SucursalApiController::class, 'index']);
+    $api->addRoute('POST', '/sucursales', [SucursalApiController::class, 'store']);
+    $api->addRoute('GET', '/sucursales/{id:\d+}', [SucursalApiController::class, 'show']);
+    $api->addRoute('PUT', '/sucursales/{id:\d+}', [SucursalApiController::class, 'update']);
+    $api->addRoute('DELETE', '/sucursales/{id:\d+}', [SucursalApiController::class, 'destroy']);
 
     // --- API de Propiedades ---
     $api->addRoute('GET', '/propiedades', [PropiedadApiController::class, 'apiGetAll']);
@@ -48,7 +56,12 @@ return function (RouteCollector $api) {
     $api->addRoute('POST', '/carteras/upload', [CarteraApiController::class, 'apiUploadCartera']);
 
     // --- API de Administradoras ---
-    $api->addRoute('GET', '/administradoras', [AdministradoraApiController::class, 'apiGetAll']);
+    $api->addRoute('GET', '/administradoras', [AdministradoraApiController::class, 'index']);
+    $api->addRoute('POST', '/administradoras', [AdministradoraApiController::class, 'store']);
+    $api->addRoute('GET', '/administradoras/{id:\d+}', [AdministradoraApiController::class, 'show']);
+    $api->addRoute('PUT', '/administradoras/{id:\d+}', [AdministradoraApiController::class, 'update']);
+    $api->addRoute('DELETE', '/administradoras/{id:\d+}', [AdministradoraApiController::class, 'destroy']);
+    // $api->addRoute('GET', '/administradoras', [AdministradoraApiController::class, 'apiGetAll']);
 
     // --- API de Prospectos ---
     $api->addRoute('GET', '/prospectos', [ProspectoApiController::class, 'apiGetAll']);
@@ -95,6 +108,7 @@ return function (RouteCollector $api) {
     $api->addRoute('GET', '/catalogos/estatus-prospeccion', [CatalogoApiController::class, 'apiGetEstatusProspeccion']);
     $api->addRoute('GET', '/catalogos/estatus-global-prospecto', [CatalogoApiController::class, 'apiGetAllEstatusGlobalProspecto']);
     $api->addRoute('GET', '/catalogos/administradoras', [CatalogoApiController::class, 'apiGetAdministradoras']);
+    $api->addRoute('GET', '/catalogos/roles', [CatalogoApiController::class, 'apiGetRoles']);
 
     // --- API para Subidas de Archivos ---
     $api->addRoute('POST', '/uploads/temp-photo', [UploadApiController::class, 'handleTempUpload']);

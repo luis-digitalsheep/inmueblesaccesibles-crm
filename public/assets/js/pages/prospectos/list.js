@@ -123,7 +123,7 @@ async function fetchProspectos() {
 async function fetchCatalogosParaFiltros() {
     try {
         const [usuariosResponse, sucursalesResponse, estatusResponse] = await Promise.all([
-            fetchData('/api/usuarios'),
+            fetchData('/api/usuarios/simple-list'),
             fetchCatalog('sucursales'),
         ]);
 

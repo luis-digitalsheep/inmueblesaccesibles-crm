@@ -3,6 +3,7 @@
 
 use FastRoute\RouteCollector;
 
+use App\Controllers\Web\AdministradoraController;
 use App\Controllers\Web\AuthController;
 use App\Controllers\Web\DashboardController;
 use App\Controllers\Web\PropiedadController;
@@ -13,6 +14,8 @@ use App\Controllers\Web\DocumentoController;
 use App\Controllers\Web\ProcesoVentaController;
 use App\Controllers\Web\FolioApartadoController;
 use App\Controllers\Web\ClienteController;
+use App\Controllers\Web\SucursalController;
+use App\Controllers\Web\UsuarioController;
 
 /**
  * Define las rutas web (de navegación) de la aplicación.
@@ -55,13 +58,13 @@ return function (RouteCollector $r) {
 
     $r->addRoute('GET', '/reporte-ejemplo', [TestController::class, 'index']);
 
-    $r->addRoute('GET', '/usuarios', [TestController::class, 'index']);
+    $r->addRoute('GET', '/usuarios', [UsuarioController::class, 'index']);
 
     $r->addRoute('GET', '/roles', [TestController::class, 'index']);
 
-    $r->addRoute('GET', '/administradoras', [TestController::class, 'index']);
+    $r->addRoute('GET', '/administradoras', [AdministradoraController::class, 'index']);
 
-    $r->addRoute('GET', '/sucursales', [TestController::class, 'index']);
+    $r->addRoute('GET', '/sucursales', [SucursalController::class, 'index']);
 
     $r->addRoute('GET', '/permisos', [TestController::class, 'index']);
 
