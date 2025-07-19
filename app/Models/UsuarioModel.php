@@ -47,8 +47,6 @@ class UsuarioModel
 
     $sql .= " ORDER BY u.nombre ASC LIMIT :limit OFFSET :offset";
 
-    error_log($sql);
-
     try {
       $stmt = $this->db->prepare($sql);
 

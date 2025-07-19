@@ -3,6 +3,11 @@
     <html lang="es">
 
     <head>
+      <?php
+      $cssFilePath = BASE_PATH . '/public/assets/css/main.css';
+      $version = file_exists($cssFilePath) ? filemtime($cssFilePath) : '1.0.0';
+      ?>
+
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link rel="icon" type="image/png" href="/assets/img/favicon.ico">
@@ -28,7 +33,8 @@
       <link href="/assets/css/components/modal.css" rel="stylesheet">
       <link href="/assets/css/components/dropzone.css" rel="stylesheet"> -->
       <!-- <style src="/assets/css/propiedades-detail.css" type="text/css"></style> -->
-      <link rel="stylesheet" href="/assets/css/main.css">
+       
+      <link rel="stylesheet" href="/assets/css/main.css?v=<?php echo $version; ?>">
 
       <script type="module" src="/assets/js/utils/modal.js"></script>
       <script type="module" src="/assets/js/utils/alerts.js"></script>
@@ -36,7 +42,6 @@
       <script type="module" src="/assets/js/permissions.js"></script>
 
       <script type="module" src="/assets/js/main.js"></script>
-
     </head>
 
     <body data-current-route="<?php echo htmlspecialchars($currentRoute ?? ''); ?>">
