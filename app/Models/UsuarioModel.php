@@ -31,8 +31,9 @@ class UsuarioModel
     $params = [];
 
     if (!empty($filters['nombre'])) {
-      $whereClauses[] = "(u.nombre LIKE :nombre OR u.email LIKE :nombre)";
+      $whereClauses[] = "(u.nombre LIKE :nombre OR u.email LIKE :email)";
       $params[':nombre'] = '%' . $filters['nombre'] . '%';
+      $params[':email'] = '%' . $filters['nombre'] . '%';
     }
 
     if (!empty($filters['id'])) {
@@ -45,6 +46,8 @@ class UsuarioModel
     }
 
     $sql .= " ORDER BY u.nombre ASC LIMIT :limit OFFSET :offset";
+
+    error_log($sql);
 
     try {
       $stmt = $this->db->prepare($sql);
@@ -195,7 +198,7 @@ class UsuarioModel
   public function create(array $data): ?int
   {
     $sql = "INSERT INTO {$this->tableName} (nombre, email, telefono, password_hash, rol_id, sucursal_id, activo, creado_por_usuario_id, actualizado_por_usuario_id) 
-                VALUES (:nombre, :email, :telefono, :password_hash, :rol_id, :sucursal_id, :activo, :user_id, :user_id)";
+                VALUES (:nombre, :email, :telefono, :password_hash, :rol_id, :sucursal_id, :activo, :creado_por, :actualizado_por)";
     try {
       $stmt = $this->db->prepare($sql);
       $passwordHash = password_hash($data['password'], PASSWORD_DEFAULT);
@@ -207,7 +210,8 @@ class UsuarioModel
       $stmt->bindParam(':rol_id', $data['rol_id'], PDO::PARAM_INT);
       $stmt->bindParam(':sucursal_id', $data['sucursal_id'], PDO::PARAM_INT);
       $stmt->bindValue(':activo', $data['activo'] ?? 1, PDO::PARAM_INT);
-      $stmt->bindParam(':user_id', $data['user_id'], PDO::PARAM_INT);
+      $stmt->bindParam(':creado_por', $data['user_id'], PDO::PARAM_INT);
+      $stmt->bindParam(':actualizado_por', $data['user_id'], PDO::PARAM_INT);
 
       if ($stmt->execute()) {
         return (int)$this->db->lastInsertId();
