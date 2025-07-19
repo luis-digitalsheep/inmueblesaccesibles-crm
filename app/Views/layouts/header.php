@@ -146,7 +146,13 @@
               <li class="nav-item <?php echo ($currentRoute === 'permisos') ? 'active' : ''; ?>">
                 <a href="/permisos">
                   <i class="icon fa-solid fa-users-gear"></i>
-                  <span>Roles y permisos</span>
+                  <span>Permisos</span>
+                </a>
+              </li>
+              <li class="nav-item <?php echo ($currentRoute === 'roles') ? 'active' : ''; ?>">
+                <a href="/roles">
+                  <i class="icon fa-solid fa-users-gear"></i>
+                  <span>Roles</span>
                 </a>
               </li>
             </ul>

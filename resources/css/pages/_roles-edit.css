@@ -1,0 +1,68 @@
+/* Contenedor principal para todos los grupos de permisos */
+.permissions-container {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* Tarjeta para agrupar los permisos de un módulo */
+.permission-group {
+    border: 1px solid var(--color-border, #e3e6f0);
+    border-radius: var(--border-radius-default);
+    background-color: #fff;
+    box-shadow: none;
+    /* Sombra más sutil que una card normal */
+}
+
+.permission-group-header {
+    padding: 0.75rem 1.25rem;
+    background-color: var(--color-bg-light);
+    border-bottom: 1px solid var(--color-border, #e3e6f0);
+}
+
+.permission-group-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: capitalize;
+    margin: 0;
+}
+
+.permission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    padding: 1.25rem;
+}
+
+/* Estilo para cada item de permiso (checkbox + label) */
+.permission-item .form-check-label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid transparent;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.permission-item .form-check-input {
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+    width: 1.2em;
+    /* Checkbox un poco más grande */
+    height: 1.2em;
+}
+
+.permission-item .form-check-label:hover {
+    background-color: #f0f4ff;
+    /* Un hover azul muy sutil */
+}
+
+/* Estilo para cuando el permiso está seleccionado */
+.permission-item .form-check-input:checked+.form-check-label {
+    background-color: #e6eefc;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}

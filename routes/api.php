@@ -8,10 +8,12 @@ use App\Controllers\Api\CarteraApiController;
 use App\Controllers\Api\CatalogoApiController;
 use App\Controllers\Api\ClienteApiController;
 use App\Controllers\Api\DocumentoApiController;
+use App\Controllers\Api\PermisoApiController;
 use App\Controllers\Api\ProcesoVentaApiController;
 use App\Controllers\Api\PropiedadApiController;
 use App\Controllers\Api\PropiedadRevisionApiController;
 use App\Controllers\Api\ProspectoApiController;
+use App\Controllers\Api\RolApiController;
 use App\Controllers\Api\SeguimientoApiController;
 use App\Controllers\Api\SucursalApiController;
 use App\Controllers\Api\UsuarioApiController;
@@ -100,6 +102,22 @@ return function (RouteCollector $api) {
     $api->addRoute('GET', '/clientes/{id:\d+}/seguimientos', [SeguimientoApiController::class, 'indexByCliente']);
     $api->addRoute('GET', '/clientes/{id:\d+}/documentos', [DocumentoApiController::class, 'indexByCliente']);
     $api->addRoute('PUT', '/clientes/{id:\d+}', [ClienteApiController::class, 'update']);
+
+    // --- API de Permisos ---
+    $api->addRoute('GET', '/permisos', [PermisoApiController::class, 'index']);
+    $api->addRoute('POST', '/permisos', [PermisoApiController::class, 'store']);
+    $api->addRoute('GET', '/permisos/{id:\d+}', [PermisoApiController::class, 'show']);
+    $api->addRoute('PUT', '/permisos/{id:\d+}', [PermisoApiController::class, 'update']);
+    $api->addRoute('DELETE', '/permisos/{id:\d+}', [PermisoApiController::class, 'destroy']);
+
+    $api->addRoute('GET', '/permisos/all-grouped', [PermisoApiController::class, 'getAllGrouped']);
+
+    // --- API de Roles ---
+    $api->addRoute('GET', '/roles', [RolApiController::class, 'index']);
+    $api->addRoute('POST', '/roles', [RolApiController::class, 'store']);
+    $api->addRoute('GET', '/roles/{id:\d+}', [RolApiController::class, 'show']);
+    $api->addRoute('PUT', '/roles/{id:\d+}', [RolApiController::class, 'update']);
+    $api->addRoute('DELETE', '/roles/{id:\d+}', [RolApiController::class, 'destroy']);
 
     // --- API de Catálogos ---
     $api->addRoute('GET', '/catalogos/estados', [CatalogoApiController::class, 'apiGetEstados']);

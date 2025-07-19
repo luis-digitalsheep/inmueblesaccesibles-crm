@@ -14,6 +14,8 @@ use App\Controllers\Web\DocumentoController;
 use App\Controllers\Web\ProcesoVentaController;
 use App\Controllers\Web\FolioApartadoController;
 use App\Controllers\Web\ClienteController;
+use App\Controllers\Web\PermisoController;
+use App\Controllers\Web\RolController;
 use App\Controllers\Web\SucursalController;
 use App\Controllers\Web\UsuarioController;
 
@@ -60,13 +62,14 @@ return function (RouteCollector $r) {
 
     $r->addRoute('GET', '/usuarios', [UsuarioController::class, 'index']);
 
-    $r->addRoute('GET', '/roles', [TestController::class, 'index']);
-
     $r->addRoute('GET', '/administradoras', [AdministradoraController::class, 'index']);
 
     $r->addRoute('GET', '/sucursales', [SucursalController::class, 'index']);
 
-    $r->addRoute('GET', '/permisos', [TestController::class, 'index']);
+    $r->addRoute('GET', '/permisos', [PermisoController::class, 'index']);
+
+    $r->addRoute('GET', '/roles', [RolController::class, 'index']);
+    $r->addRoute('GET', '/roles/editar/{id:\d+}', [RolController::class, 'edit']);
 
     $r->addRoute('GET', '/documentos/descargar/{id:\d+}', [DocumentoController::class, 'descargar']);
 };
