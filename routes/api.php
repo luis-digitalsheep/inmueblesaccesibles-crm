@@ -70,13 +70,13 @@ return function (RouteCollector $api) {
     $api->addRoute('POST', '/prospectos', [ProspectoApiController::class, 'apiCreate']);
     $api->addRoute('GET', '/prospectos/{id:\d+}', [ProspectoApiController::class, 'apiGetById']);
     $api->addRoute('PUT', '/prospectos/{id:\d+}', [ProspectoApiController::class, 'apiUpdate']);
+    $api->addRoute('DELETE', '/prospectos/{id:\d+}', [ProspectoApiController::class, 'apiDestroy']);
 
     $api->addRoute('GET', '/prospectos/{id:\d+}/procesos-venta', [ProcesoVentaApiController::class, 'apiGetByProspecto']);
     $api->addRoute('POST', '/prospectos/{id:\d+}/procesos-venta', [ProcesoVentaApiController::class, 'apiCreateForProspecto']);
 
     $api->addRoute('PUT', '/prospectos/{id:\d+}/update-global-status', [ProspectoApiController::class, 'apiUpdateGlobalStatus']);
 
-    $api->addRoute('POST', '/prospectos/{id:\d+}/seguimientos', [ProspectoApiController::class, 'apiAddSeguimiento']);
     $api->addRoute('GET', '/prospectos/{id:\d+}/seguimientos', [ProspectoApiController::class, 'apiGetByProspecto']);
 
     $api->addRoute('GET', '/prospectos/{id:\d+}/documentos', [DocumentoApiController::class, 'apiGetByProspecto']);
@@ -85,6 +85,7 @@ return function (RouteCollector $api) {
 
     // --- API de Procesos de Venta ---
     $api->addRoute('GET', '/procesos-venta/{id:\d+}', [ProcesoVentaApiController::class, 'show']);
+    $api->addRoute('POST', '/procesos-venta/{id:\d+}/seguimientos', [SeguimientoApiController::class, 'addSeguimiento']);
     $api->addRoute('GET', '/procesos-venta/{id:\d+}/seguimientos', [SeguimientoApiController::class, 'getByProcesoVenta']);
     $api->addRoute('GET', '/procesos-venta/{id:\d+}/documentos', [DocumentoApiController::class, 'getByProcesoVenta']);
     $api->addRoute('PUT', '/procesos-venta/{id}/update-status', [ProcesoVentaApiController::class, 'updateStatus']);

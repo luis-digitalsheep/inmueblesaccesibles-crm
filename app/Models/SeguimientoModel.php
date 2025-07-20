@@ -18,15 +18,15 @@ class SeguimientoModel
 
     /**
      * Crea un nuevo registro de seguimiento para un prospecto.
-     * @param array $data Datos del seguimiento. Debe contener: prospecto_id, tipo_interaccion, comentarios, usuario_registra_id.
+     * @param array $data Datos del seguimiento. Debe contener: proceso_venta_id, tipo_interaccion, comentarios, usuario_registra_id.
      * @return int|false El ID del nuevo registro o false en caso de error.
      */
-    public function createForProspecto(array $data)
+    public function create(array $data)
     {
         $sql = "INSERT INTO {$this->tableName} 
-                (prospecto_id, tipo_interaccion, fecha_interaccion, usuario_registra_id, comentarios) 
+                (proceso_venta_id, tipo_interaccion, fecha_interaccion, usuario_registra_id, comentarios) 
             VALUES 
-                (:prospecto_id, :tipo_interaccion, :fecha_interaccion, :usuario_registra_id, :comentarios)
+                (:proceso_venta_id, :tipo_interaccion, :fecha_interaccion, :usuario_registra_id, :comentarios)
         ";
 
         try {
@@ -34,7 +34,7 @@ class SeguimientoModel
 
             $fechaActual = date('Y-m-d H:i:s');
 
-            $stmt->bindParam(':prospecto_id', $data['prospecto_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':proceso_venta_id', $data['proceso_venta_id'], PDO::PARAM_INT);
             $stmt->bindParam(':tipo_interaccion', $data['tipo_interaccion']);
             $stmt->bindParam(':fecha_interaccion', $fechaActual);
             $stmt->bindParam(':usuario_registra_id', $data['usuario_registra_id'], PDO::PARAM_INT);

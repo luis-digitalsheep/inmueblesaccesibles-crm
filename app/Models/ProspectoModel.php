@@ -312,7 +312,6 @@ class ProspectoModel
         }
     }
 
-
     /**
      * Elimina un prospecto.
      * 

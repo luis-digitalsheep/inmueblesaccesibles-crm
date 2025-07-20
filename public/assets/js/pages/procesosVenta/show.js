@@ -228,8 +228,13 @@ async function handleGenerarFolio() {
  */
 function handleUploadPago(docTypeId) {
     const formHtml = `
-        <p>Sube el comprobante de pago del apartado. Al completar este paso, el prospecto se convertirá en cliente.</p>
-        <form action="/api/procesos-venta/${procesoId}/subir-comprobante" class="dropzone" id="pagoDropzone"></form>
+        <p>Sube el comprobante de pago del apartado..</p>
+
+        <form id="pagoDropzone" action="/api/procesos-venta/${procesoId}/subir-comprobante" class="dropzone custom-dropzone">
+            <div class="dz-message needsclick">
+                Arrastra y suelta el comprobante de pago aquí o haz clic para seleccionarlo.<br>
+            </div>
+        </form>
     `;
 
     Modal.show('Subir Comprobante de Pago', formHtml, {
@@ -238,8 +243,12 @@ function handleUploadPago(docTypeId) {
             new Dropzone("#pagoDropzone", {
                 sending: (file, xhr, formData) => formData.append("tipo_documento_id", docTypeId),
                 success: (file, response) => {
-                    showAlert('Comprobante subido. Procesando conversión a cliente...', 'success');
-                    convertirProspectoACliente();
+                    showAlert('Comprobante subido.', 'success');
+                    Modal.hide();
+                    setTimeout(() => window.location.reload(), 1500);
+                },
+                error: (file, response) => {
+                    showAlert(response.message, 'error');
                 }
             });
         }
@@ -271,20 +280,6 @@ async function handleAddSeguimiento(e) {
         const seguimientosActualizados = await fetchData(`/api/procesos-venta/${procesoId}/seguimientos`);
         renderSeguimiento(seguimientosActualizados);
 
-    } catch (error) {
-        showAlert(error.message, 'error');
-    }
-}
-
-/**
- * Llama al endpoint final para convertir el prospecto a cliente.
- */
-async function convertirProspectoACliente() {
-    try {
-        const result = await postData(`/api/prospectos/${procesoId}/convertir-a-cliente`);
-        showAlert(result.message, 'success');
-
-        setTimeout(() => window.location.href = `/clientes/ver/${result.data.cliente_id}`, 2000);
     } catch (error) {
         showAlert(error.message, 'error');
     }

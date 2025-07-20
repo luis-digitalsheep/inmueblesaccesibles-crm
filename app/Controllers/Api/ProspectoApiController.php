@@ -102,51 +102,6 @@ class ProspectoApiController extends ApiController
         }
     }
 
-    /**
-     * API: Añade una nueva entrada de seguimiento a un prospecto.
-     * POST /api/prospectos/{id}/seguimientos
-     * @param int $id El ID del prospecto.
-     */
-    public function apiAddSeguimiento(int $id)
-    {
-        $this->checkAuthAndPermissionApi('prospectos.seguimiento.crear');
-
-        $prospecto = $this->prospectoModel->findById($id);
-
-        if (!$prospecto) {
-            $this->jsonResponse(['status' => 'error', 'message' => 'El prospecto no existe.'], 404);
-        }
-        // TODO: Añadir lógica de permisos si solo el responsable puede añadir seguimientos
-
-
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        if (json_last_error() !== JSON_ERROR_NONE || empty(trim($input['comentarios'] ?? ''))) {
-            $this->jsonResponse(['status' => 'error', 'message' => 'Datos inválidos. El comentario es requerido.'], 400);
-        }
-
-        $data = [
-            'prospecto_id' => $id,
-            'usuario_registra_id' => $this->permissionManager->getUserId(),
-            'tipo_interaccion' => $input['tipo_interaccion'] ?? 'nota',
-            'comentarios' => trim($input['comentarios'])
-        ];
-
-        // 5. Llamar al modelo para crear el registro
-        try {
-            $nuevoSeguimientoId = $this->seguimientoModel->createForProspecto($data);
-            if ($nuevoSeguimientoId) {
-                // Opcional: podrías devolver el seguimiento recién creado si la UI lo necesita
-                $this->jsonResponse(['status' => 'success', 'message' => 'Seguimiento añadido con éxito.'], 201);
-            } else {
-                $this->jsonResponse(['status' => 'error', 'message' => 'No se pudo guardar el seguimiento.'], 500);
-            }
-        } catch (\Exception $e) {
-            error_log("Error en ProspectoController::apiAddSeguimiento: " . $e->getMessage());
-            $this->jsonResponse(['status' => 'error', 'message' => 'Error interno del servidor.'], 500);
-        }
-    }
-
     public function apiUpdateGlobalStatus(int $id)
     {
         $this->checkAuthAndPermissionApi('prospectos.workflow.gestionar');
@@ -229,6 +184,19 @@ class ProspectoApiController extends ApiController
             error_log("Error en ProspectoController::apiUpdate: " . $e->getMessage());
 
             $this->jsonResponse(['status' => 'error', 'message' => 'Error al actualizar el prospecto.'], 500);
+        }
+    }
+
+    public function apiDestroy(int $id)
+    {
+        $this->checkAuthAndPermissionApi('prospectos.eliminar');
+
+        try {
+            $this->prospectoModel->delete($id);
+            $this->jsonResponse(['status' => 'success', 'message' => 'Prospecto eliminado con éxito.'], 200);
+        } catch (\Exception $e) {
+            error_log("Error en ProspectoController::apiDestroy: " . $e->getMessage());
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error al eliminar el prospecto.'], 500);
         }
     }
 

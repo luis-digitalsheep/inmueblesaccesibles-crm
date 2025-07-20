@@ -28,6 +28,30 @@ class SeguimientoApiController extends ApiController
         $this->jsonResponse(['status' => 'success', 'data' => $seguimientos]);
     }
 
+    public function addSeguimiento(int $procesoVentaId)
+    {
+        $this->checkAuthAndPermissionApi('procesos_venta.seguimiento.crear');
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $userId = $this->permissionManager->getUserId();
+        $data = [
+            'proceso_venta_id' => $procesoVentaId,
+            'tipo_interaccion' => $input['tipo_interaccion'] ?? 'nota',
+            'comentarios' => $input['comentarios'] ?? '',
+            'usuario_registra_id' => $userId
+        ];
+
+        try {
+            $seguimientoId = $this->seguimientoModel->create($data);
+            if (!$seguimientoId) throw new \Exception('No se pudo crear el seguimiento.');
+
+            $this->jsonResponse(['status' => 'success', 'message' => 'Seguimiento creado con éxito.'], 201);
+        } catch (\Exception $e) {
+            error_log("Error en SeguimientoApiController::addSeguimiento: " . $e->getMessage());
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error interno al crear el seguimiento.'], 500);
+        }
+    }
+
     /**
      * API: Devuelve todos los seguimientos de un cliente.
      * @param int $clienteId

@@ -376,4 +376,26 @@ class PropiedadModel
       return false;
     }
   }
+
+  /**
+   * Actualiza el estatus de disponibilidad de una propiedad.
+   * @param int $propiedadId
+   * @param string $newStatus El nuevo estatus (ej. 'En Proceso', 'Disponible').
+   * @return bool
+   */
+  public function updateStatus(int $propiedadId, string $newStatus): bool
+  {
+    $sql = "UPDATE propiedades SET estatus_disponibilidad = :new_status WHERE id = :id";
+    try {
+      $stmt = $this->db->prepare($sql);
+
+      $stmt->bindParam(':new_status', $newStatus, PDO::PARAM_STR);
+      $stmt->bindParam(':id', $propiedadId, PDO::PARAM_INT);
+      
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error en PropiedadModel::updateStatus: " . $e->getMessage());
+      return false;
+    }
+  }
 }

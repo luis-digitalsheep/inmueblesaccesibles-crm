@@ -39,14 +39,14 @@ function getCreateFormHtml(catalogos) {
                 <div class="form-group">
                     <label for="usuario_responsable_id" class="form-label">Responsable:</label>
                     <select id="usuario_responsable_id" name="usuario_responsable_id" class="form-select">
-                        <option value="">Seleccione...</option>
+                        <option disabled value="">Seleccione...</option>
                         ${usuarios.map(u => `<option value="${u.id}" ${currentUserId == u.id ? 'selected' : ''}>${u.nombre}</option>`).join('')}
                     </select>
                 </div>
                  <div class="form-group">
                     <label for="sucursal_id" class="form-label">Sucursal:</label>
                     <select id="sucursal_id" name="sucursal_id" class="form-select">
-                        <option value="">Seleccione...</option>
+                        <option disabled value="">Seleccione...</option>
                         ${sucursales.map(s => `<option value="${s.id}" ${currentUserSucursalId == s.id ? 'selected' : ''}>${s.nombre}</option>`).join('')}
                     </select>
                 </div>

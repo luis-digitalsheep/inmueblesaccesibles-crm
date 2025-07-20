@@ -6,6 +6,7 @@ use App\Controllers\ApiController;
 use App\Models\DocumentoModel;
 use App\Models\FolioApartadoModel;
 use App\Models\ProcesoVentaModel;
+use App\Models\PropiedadModel;
 use App\Models\ProspectoModel;
 use App\Models\ValidacionPagoModel;
 use Dompdf\Dompdf;
@@ -18,6 +19,7 @@ class ProcesoVentaApiController extends ApiController
     private $folioApartadoModel;
     private $documentoModel;
     private $validacionPagoModel;
+    private $propiedadModel;
 
     public function __construct()
     {
@@ -27,6 +29,7 @@ class ProcesoVentaApiController extends ApiController
         $this->folioApartadoModel = new FolioApartadoModel();
         $this->documentoModel = new DocumentoModel();
         $this->validacionPagoModel = new ValidacionPagoModel();
+        $this->propiedadModel = new PropiedadModel();
     }
 
     /**
@@ -93,6 +96,10 @@ class ProcesoVentaApiController extends ApiController
 
         try {
             $procesoId = $this->procesoVentaModel->create($data);
+
+            if (!$this->propiedadModel->updateStatus($propiedadId, 'En Proceso')) {
+                throw new \Exception('No se pudo actualizar el estado de la propiedad.');
+            }
 
             if ($procesoId) {
                 $nuevoProceso = $this->procesoVentaModel->findById($procesoId);
