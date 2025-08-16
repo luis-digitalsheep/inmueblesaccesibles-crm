@@ -1,0 +1,46 @@
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.widget-card {
+    background-color: #fff;
+    border-radius: var(--border-radius-default);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+    display: block;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.widget-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+}
+
+.widget-card-body {
+    padding: 1.25rem;
+}
+
+.widget-card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.widget-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text-main);
+}
+
+.widget-card-icon {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    font-size: 2rem;
+    color: rgba(0, 0, 0, 0.1);
+}

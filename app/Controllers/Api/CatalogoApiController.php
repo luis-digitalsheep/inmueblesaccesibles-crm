@@ -210,4 +210,27 @@ class CatalogoApiController extends ApiController
             ], 500);
         }
     }
+
+    public function apiGetResultadosSeguimiento() 
+    {
+        $this->checkAuthAndPermissionApi(
+            'catalogos.ver',
+            'Acceso denegado a la API de catálogos.'
+        );
+
+        try {
+            $resultados = $this->catalogoModel->getAll('cat_resultados_seguimiento');
+
+            $this->jsonResponse([
+                'status' => 'success',
+                'data' => $resultados,
+            ], 200);
+        } catch (\Exception $e) {
+            error_log("Error en CatalogoController::apiGetResultadosSeguimiento(): " . $e->getMessage());
+            $this->jsonResponse([
+                'status' => 'error',
+                'message' => 'Error interno del servidor al obtener resultados de seguimiento.'
+            ], 500);
+        }
+    }
 }

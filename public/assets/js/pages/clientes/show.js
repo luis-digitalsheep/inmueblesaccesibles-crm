@@ -54,8 +54,7 @@ function renderInfoGeneral(cliente, catalogos) {
                     <input type="email" name="email" class="form-input is-readonly" value="${cliente.email || ''}" readonly>
                 </div>
             </div>
-            <hr class="my-4">
-            <h5 class="form-section-title">Asignación</h5>
+            <h5 class="my-4 form-section-title">Asignación</h5>
              <div class="form-columns cols-2">
                 <div class="form-group">
                     <label class="form-label">Responsable</label>
@@ -83,7 +82,7 @@ function renderProcesosVenta(procesos) {
     let listHtml = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="form-section-title mb-0">Oportunidades de Venta</h5>
-            ${permissions.canCreateProceso ? `<button class="btn btn-primary btn-sm" id="btnNuevoProcesoCliente"><i class="fas fa-plus"></i> Añadir Proceso</button>` : ''}
+            ${permissions.canCreateProceso ? `<button class="btn btn-primary btn-sm" id="btnNuevoProcesoCliente">Añadir Proceso</button>` : ''}
         </div>
         <div class="table-responsive">
             <table class="table">
@@ -99,7 +98,7 @@ function renderProcesosVenta(procesos) {
                     <td><a href="/propiedades/ver/${p.propiedad_id}">${p.propiedad_direccion}</a></td>
                     <td><span class="status-badge status-disponible">${p.estatus_nombre}</span></td>
                     <td>${new Date(p.created_at).toLocaleDateString('es-MX')}</td>
-                    <td class="actions-column"><a href="/procesos-venta/ver/${p.id}" class="btn btn-sm btn-info">Gestionar</a></td>
+                    <td class="actions-column"><a href="/procesos-venta/ver/${p.id}" class="btn btn-sm btn-primary">Gestionar</a></td>
                 </tr>`;
         });
     }
@@ -154,7 +153,7 @@ function renderDocumentos(documentos) {
                     <td>${doc.proceso_venta_id ? `<a href="/procesos-venta/ver/${doc.proceso_venta_id}">Proceso #${doc.proceso_venta_id}</a>` : 'General'}</td>
                     <td>${new Date(doc.created_at).toLocaleDateString('es-MX')}</td>
                     <td class="actions-column">
-                        <a href="/documentos/descargar/${doc.id}" target="_blank" class="btn btn-sm btn-secondary">Ver</a>
+                        <a href="/documentos/descargar/${doc.id}" target="_blank" class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i> Ver</a>
                     </td>
                 </tr>`;
         });
@@ -187,19 +186,18 @@ async function handleUpdateInfoGeneral(e) {
 
 async function initPage() {
     try {
-        // Hacemos todas las llamadas a la API en paralelo
         const [
             { data: cliente },
             { data: procesosVenta },
-            // {data: seguimientos},  // Necesitarás endpoints para estos
-            // {data: documentos},    // y para este
+            {data: seguimientos},
+            {data: documentos},
             { data: usuarios },
             { data: sucursales }
         ] = await Promise.all([
             fetchData(`/api/clientes/${clienteId}`),
-            fetchData(`/api/clientes/${clienteId}/procesos-venta`), // Endpoint nuevo
-            fetchData(`/api/clientes/${clienteId}/seguimientos`), // Endpoint nuevo
-            fetchData(`/api/clientes/${clienteId}/documentos`),   // Endpoint nuevo
+            fetchData(`/api/clientes/${clienteId}/procesos-venta`),
+            fetchData(`/api/clientes/${clienteId}/seguimientos`),
+            fetchData(`/api/clientes/${clienteId}/documentos`),
             fetchData('/api/usuarios/simple-list'),
             fetchCatalog('sucursales')
         ]);
@@ -210,7 +208,7 @@ async function initPage() {
         pageTitleElement.textContent = `Cliente: ${cliente.nombre_completo}`;
         pageDescriptionElement.textContent = `ID de Cliente: ${cliente.id}`;
 
-        // Renderizamos el contenido de cada pestaña
+        // Renderizar el contenido de cada pestaña
         renderInfoGeneral(cliente, pageCatalogos);
         renderProcesosVenta(procesosVenta);
         renderSeguimiento(seguimientos);

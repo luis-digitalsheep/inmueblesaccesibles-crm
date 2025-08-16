@@ -239,11 +239,73 @@ class ProcesoVentaModel
             $stmt = $this->db->prepare($sql);
             $stmt->bindParam(':cliente_id', $clienteId, PDO::PARAM_INT);
             $stmt->execute();
-     
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Error en ProcesoVentaModel::findAllByClienteId: " . $e->getMessage());
             return [];
+        }
+    }
+
+    /**
+     * Encuentra un proceso de venta a partir del ID de un pago asociado.
+     * @param int $pagoId
+     * @return array|null
+     */
+    public function findByPagoId(int $pagoId): ?array
+    {
+        $sql = "SELECT pv.* FROM procesos_venta pv
+            JOIN pagos p ON pv.id = p.proceso_venta_id
+            WHERE p.id = :pago_id";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+
+            $stmt->bindParam(':pago_id', $pagoId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::findByPagoId: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene el conteo de procesos de venta activos para un usuario.
+     * @param int $userId
+     * @return int
+     */
+    public function countActiveByUser(int $userId): int
+    {
+        $sql = "SELECT COUNT(id) FROM {$this->tableName} WHERE usuario_responsable_id = :user_id AND is_active = 1";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::countActiveByUser: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Obtiene el conteo de todos los procesos de venta activos en el sistema.
+     * @return int
+     */
+    public function countAllActive(): int
+    {
+        $sql = "SELECT COUNT(id) FROM {$this->tableName} WHERE is_active = 1";
+     
+        try {
+            return (int) $this->db->query($sql)->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error en ProcesoVentaModel::countAllActive: " . $e->getMessage());
+            return 0;
         }
     }
 }

@@ -21,6 +21,14 @@ button.btn:hover {
   text-decoration: none;
 }
 
+.btn i {
+  margin-right: 10px;
+}
+
+.btn i.only-icon {
+  margin-right: 0;
+}
+
 .btn-primary {
   background-color: var(--color-primary);
   color: #fff;

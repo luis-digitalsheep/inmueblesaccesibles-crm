@@ -16,6 +16,7 @@
       <!-- Librerias JS -->
       <script src="https://kit.fontawesome.com/dbec4d7656.js" crossorigin="anonymous"></script>
       <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 
       <!-- Fonts -->
       <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +27,7 @@
       <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
       <!-- Estilos CSS -->
       <!-- <link href="/assets/css/main.css" rel="stylesheet">
@@ -33,7 +35,7 @@
       <link href="/assets/css/components/modal.css" rel="stylesheet">
       <link href="/assets/css/components/dropzone.css" rel="stylesheet"> -->
       <!-- <style src="/assets/css/propiedades-detail.css" type="text/css"></style> -->
-       
+
       <link rel="stylesheet" href="/assets/css/main.css?v=<?php echo $version; ?>">
 
       <script type="module" src="/assets/js/utils/modal.js"></script>
@@ -172,7 +174,27 @@
                   <i class="fa-solid fa-bars"></i>
                 </button>
               </div>
+
               <div class="topbar-right">
+
+                <div class="notification-container">
+                  <div class="notification-bell" id="notificationBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                  </div>
+                  <div class="notification-panel" id="notificationPanel">
+                    <div class="notification-panel-header">
+                      <h6>Notificaciones</h6>
+                    </div>
+                    <div class="notification-panel-body" id="notificationList">
+                      <div class="notification-item-placeholder">Cargando...</div>
+                    </div>
+                    <div class="notification-panel-footer">
+                      <a href="/notificaciones">Ver todas las notificaciones</a>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="user-dropdown">
                   <a href="#" class="user-info" role="button" aria-expanded="false">
                     <span class="user-name"><?php echo htmlspecialchars($_SESSION['nombre_usuario'] ?? 'Usuario'); ?></span>
@@ -185,6 +207,7 @@
                   </div>
                 </div>
               </div>
+              
             </nav>
           </header>
 

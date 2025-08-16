@@ -332,4 +332,42 @@ class ProspectoModel
             return false;
         }
     }
+
+    /**
+     * Obtiene el conteo de prospectos activos asignados a un usuario específico.
+     * @param int $userId
+     * @return int
+     */
+    public function countByUser(int $userId): int
+    {
+        $sql = "SELECT COUNT(id) FROM {$this->tableName} WHERE usuario_responsable_id = :user_id AND cliente_id IS NULL AND activo = 1";
+
+        try {
+            $stmt = $this->db->prepare($sql);
+
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error en ProspectoModel::countByUser: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Obtiene el conteo de todos los prospectos activos en el sistema.
+     * @return int
+     */
+    public function countAllActive(): int
+    {
+        $sql = "SELECT COUNT(id) FROM {$this->tableName} WHERE cliente_id IS NULL AND activo = 1";
+        
+        try {
+            return (int) $this->db->query($sql)->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error en ProspectoModel::countAllActive: " . $e->getMessage());
+            return 0;
+        }
+    }
 }

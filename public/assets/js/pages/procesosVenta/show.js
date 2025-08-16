@@ -21,7 +21,7 @@ function renderWorkflow(proceso, estatusCatalogo) {
 
     console.log(estatusActualId)
     estatusCatalogo.forEach(paso => {
-        if (paso.id < 5) {
+        if (paso.id < 10) {
             console.log(paso.id)
             const isActive = estatusActualId == (paso.id);
             const isCompleted = estatusActualId > paso.id;
@@ -31,6 +31,8 @@ function renderWorkflow(proceso, estatusCatalogo) {
 
             if (isActive && permissions.canManageWorkflow) {
                 let actionContent = '';
+
+                console.log('paso.id', paso.id);
 
                 switch (parseInt(paso.id)) {
                     case 1: // Estado: "Proceso de Venta Iniciado"
@@ -45,7 +47,40 @@ function renderWorkflow(proceso, estatusCatalogo) {
                         break;
                     case 3: // 'Contrato de Apartado Generado'
                         actionContent = `<p>El contrato de apartado ha sido generado. Sube el comprobante de pago para continuar.</p>
-                                     <button class="btn btn-primary btn-sm btn-upload-pago" data-doc-type-id="2">Subir Comprobante</button>`; // Asumiendo que "Comprobante de Apartado" es tipo 2
+                                     <button class="btn btn-primary btn-sm btn-upload-pago" data-doc-type-id="2">Subir Comprobante</button>`;
+                        break;
+                    case 4: // Estado: "Comprobante de Pago Subido"
+                        actionContent = `<p class="process-step-description">El comprobante ha sido subido. Un administrador debe validarlo.</p><button class="btn btn-secondary btn-sm" disabled>Pendiente de Validación</button>`;
+                        break;
+                    case 5: // Estado: "Pago Validado / Convertido a Cliente"
+                        actionContent = `<p class="process-step-description">El pago ha sido validado y el prospecto ahora es un cliente. El siguiente paso es solicitar el contrato final.</p><button class="btn btn-primary btn-sm btn-solicitar-contrato" data-next-status-id="6">Solicitar Contrato</button>`;
+                        break;
+                    case 6: // Estado: "Solicitud de Contrato Generada"
+                        actionContent = `<p class="process-step-description">La solicitud ha sido enviada. El área administrativa/legal debe preparar y subir el contrato.</p><button class="btn btn-secondary btn-sm" disabled>Pendiente de Contrato</button>`;
+                        break;
+                    case 7: // Estado: "Contrato Final Cargado"
+                        actionContent = `<p class="process-step-description">El contrato final está listo. Sube el documento firmado por el cliente para continuar.</p><button class="btn btn-primary btn-sm btn-upload-contrato" data-doc-type-id="3">Subir Contrato Firmado</button>`; // Asumiendo que "Contrato Firmado" es tipo 3
+                        break;
+                    case 8: // Estado: "Contrato Validado y Cargado"
+                        actionContent = `
+                            <p class="process-step-description">El contrato ha sido validado por el equipo administrativo. El siguiente paso es obtener la firma del cliente y subir el documento escaneado.</p>
+                            <button class="btn btn-primary btn-sm btn-upload-contrato-firmado" data-doc-type-id="4">Subir Contrato Firmado</button>
+                        `;
+                        break;
+                    case 9: // Estado: "Contrato Firmado Recibido"
+                        actionContent = `
+                        <p class="process-step-description">El contrato firmado ha sido recibido. Verifica que toda la documentación esté en orden y formaliza la venta para cerrar el proceso.</p>
+                        <button class="btn btn-primary btn-sm btn-marcar-paso" data-next-status-id="10">Marcar Venta como Formalizada</button>
+                    `;
+                        break;
+                    case 10: // Estado: "Venta Formalizada"
+                        actionContent = `
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>¡Proceso de Venta Completado!</strong><br>
+                            <small>Este expediente de venta ha sido cerrado exitosamente.</small>
+                        </div>
+                    `;
                         break;
                 }
                 if (actionContent) {
@@ -74,30 +109,39 @@ function renderWorkflow(proceso, estatusCatalogo) {
  * Incluye el formulario para añadir nuevas interacciones y el historial.
  * @param {Array} seguimientos - El array con el historial de seguimientos para este proceso.
  */
-function renderSeguimiento(seguimientos) {
+async function renderSeguimiento(seguimientos) {
     const container = document.getElementById('proceso-seguimiento-container');
     if (!container) return;
+
+    const { data: resultadosCatalogo } = await fetchCatalog('resultados-seguimiento');
 
     const formHtml = permissions.canAddSeguimiento ? `
         <fieldset class="form-fieldset mb-4">
             <legend class="fieldset-legend">Añadir Nuevo Seguimiento</legend>
             <form id="formNuevoSeguimiento" class="app-form">
-                <div class="form-group mb-2">
-                    <label for="tipo_interaccion" class="form-label">Tipo de Interacción</label>
-                    <select name="tipo_interaccion" id="tipo_interaccion" class="form-select">
-                        <option value="llamada">Llamada</option>
-                        <option value="email">Email</option>
-                        <option value="cita">Cita</option>
-                        <option value="visita_propiedad">Visita a Propiedad</option>
-                        <option value="nota">Nota General</option>
-                    </select>
+                <div class="form-columns cols-2">
+                    <div class="form-group">
+                        <label for="tipo_interaccion" class="form-label">Tipo de Interacción</label>
+                        <select name="tipo_interaccion" class="form-select">
+                            <option value="llamada">Llamada</option>
+                            <option value="email">Email</option>
+                            <option value="cita">Cita</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="resultado" class="form-label">Resultado</label>
+                        <select name="resultado" id="resultado" class="form-select" required>
+                            <option value="">Seleccione un resultado...</option>
+                            ${resultadosCatalogo.map(r => `<option value="${r.nombre}">${r.nombre}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group mb-2">
+                <div class="form-group mt-2">
                     <label for="comentarios_seguimiento" class="form-label">Comentarios</label>
-                    <textarea name="comentarios" id="comentarios_seguimiento" rows="3" class="form-textarea" required></textarea>
+                    <textarea name="comentarios" rows="3" class="form-textarea" required></textarea>
                 </div>
-                <div class="text-end">
-                    <button type="submit" class="btn btn-primary btn-sm">Agregar Seguimiento</button>
+                <div class="text-end mt-2">
+                    <button type="submit" class="btn btn-primary btn-sm">Agregar</button>
                 </div>
             </form>
         </fieldset>
@@ -174,7 +218,7 @@ function renderDocumentos(documentos) {
                             <i class="fas fa-eye"></i> Ver
                         </a>
                         <button class="btn btn-sm btn-danger btn-delete-doc" data-doc-id="${doc.id}" title="Eliminar Documento">
-                            <i class="fas fa-trash"></i>
+                            <i class="fas fa-trash only-icon"></i>
                         </button>
                     </td>
                 </tr>
@@ -285,6 +329,62 @@ async function handleAddSeguimiento(e) {
     }
 }
 
+/**
+ * Maneja la acción de "Solicitar Contrato".
+ * Llama a la API para crear la solicitud y avanza el estado del proceso.
+ */
+async function handleSolicitarContrato() {
+    Modal.confirm(
+        'Confirmar Solicitud',
+        '¿Estás seguro de que deseas enviar la solicitud para la generación del contrato? Esta acción notificará al área correspondiente.',
+        async () => {
+            try {
+                const result = await postData(`/api/procesos-venta/${procesoId}/solicitar-contrato`);
+                showAlert(result.message, 'success');
+
+                setTimeout(() => window.location.reload(), 1500);
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+    );
+}
+
+// Función para manejar la subida del contrato firmado
+function handleUploadContratoFirmado(docTypeId) {
+    const formHtml = `
+        <p>Sube el contrato final firmado por el cliente. Al hacerlo, el proceso avanzará a la siguiente etapa.</p>
+
+        <form id="contratoFirmadoDropzone" action="/api/procesos-venta/${procesoId}/subir-documento" class="dropzone custom-dropzone">
+            <div class="dz-message needsclick">
+                Arrastra y suelta el archivo aquí o haz clic para seleccionarlo.<br>
+            </div>
+        </form>
+    `;
+
+    Modal.show('Subir Contrato Firmado', formHtml, {
+        showFooter: false,
+        onContentReady: () => {
+            new Dropzone("#contratoFirmadoDropzone", {
+                paramName: "file",
+                maxFiles: 1,
+                sending: (file, xhr, formData) => {
+                    formData.append("tipo_documento_id", docTypeId);
+                    formData.append("siguiente_estatus_id", 9); // 9 = "Contrato Firmado Recibido"
+                },
+                success: (file, response) => {
+                    showAlert(response.message, 'success');
+                    Modal.hide();
+                    setTimeout(() => window.location.reload(), 1500);
+                },
+                error: (file, errorMessage) => {
+                    showAlert(errorMessage.message || 'Error al subir el archivo.', 'error');
+                }
+            });
+        }
+    });
+}
+
 // --- Lógica Principal ---
 async function initPage() {
     try {
@@ -295,15 +395,12 @@ async function initPage() {
             fetchCatalog('estatus-prospeccion')
         ]);
 
-
-
         const proceso = procesoResult.data;
         const seguimientos = seguimientosResult.data;
         const documentos = documentosResult.data;
         const estatusCatalogo = estatusCatalogoResult.data;
 
-        pageTitle.textContent = `Proceso de Venta: ${proceso.propiedad_direccion}`;
-        backLink.href = `/prospectos/ver/${proceso.prospecto_id}`;
+        pageTitle.textContent = `Proceso de Venta: #${proceso.id}`;
 
         renderWorkflow(proceso, estatusCatalogo);
         renderSeguimiento(seguimientos);
@@ -317,7 +414,6 @@ async function initPage() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-
     // --- LÓGICA PARA MANEJAR LAS PESTAÑAS (TABS) ---
     const tabsContainer = document.getElementById('procesoDetailTabs');
     if (tabsContainer) {
@@ -340,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- MANEJO DE ACCIONES (DELEGACIÓN DE EVENTOS) ---
+    // --- MANEJO DE ACCIONES ---
     const mainContentContainer = document.querySelector('.tab-content');
 
     if (mainContentContainer) {
@@ -363,6 +459,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleUploadPago(docTypeId);
             }
 
+            if (button.matches('.btn-solicitar-contrato')) {
+                event.preventDefault();
+                handleSolicitarContrato();
+            }
+
+            if (button.matches('.btn-upload-contrato-firmado')) {
+                event.preventDefault();
+                const docTypeId = button.dataset.docTypeId;
+                handleUploadContratoFirmado(docTypeId);
+            }
+
             // Para el botón de "Marcar Visita como Realizada" o cualquier otro paso genérico
             if (button.matches('.btn-marcar-paso')) {
                 event.preventDefault();
@@ -379,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }
+
         });
     }
 

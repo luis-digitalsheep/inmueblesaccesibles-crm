@@ -3,16 +3,25 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\ApiController;
+use App\Models\CatalogoModel;
+use App\Models\ProcesoVentaModel;
 use App\Models\SeguimientoModel;
+use App\Services\Notification\NotificationManager;
 
 class SeguimientoApiController extends ApiController
 {
     private $seguimientoModel;
+    private $notificacionManager;
+    private $catalogoModel;
+    private $procesoVentaModel;
 
     public function __construct()
     {
         parent::__construct();
         $this->seguimientoModel = new SeguimientoModel();
+        $this->notificacionManager = new NotificationManager();
+        $this->catalogoModel = new CatalogoModel();
+        $this->procesoVentaModel = new ProcesoVentaModel();
     }
 
     /**
@@ -38,14 +47,31 @@ class SeguimientoApiController extends ApiController
             'proceso_venta_id' => $procesoVentaId,
             'tipo_interaccion' => $input['tipo_interaccion'] ?? 'nota',
             'comentarios' => $input['comentarios'] ?? '',
+            'resultado' => $input['resultado'],
             'usuario_registra_id' => $userId
         ];
 
         try {
             $seguimientoId = $this->seguimientoModel->create($data);
-            if (!$seguimientoId) throw new \Exception('No se pudo crear el seguimiento.');
 
-            $this->jsonResponse(['status' => 'success', 'message' => 'Seguimiento creado con éxito.'], 201);
+            if ($seguimientoId) {
+                $catalogoResultado = $this->catalogoModel->findByName('cat_resultados_seguimiento', $data['resultado']);
+
+                if ($catalogoResultado && !empty($catalogoResultado['activa_escalamiento_a_rol'])) {
+                    $rolIdANotificar = $catalogoResultado['activa_escalamiento_a_rol'];
+
+                    $proceso = $this->procesoVentaModel->findById($procesoVentaId);
+
+                    $mensaje = "Se requiere intervención gerencial en el proceso #{$procesoVentaId} para el prospecto {$proceso['prospecto_nombre']}. Resultado: {$data['resultado']}.";
+                    $url = "/procesos-venta/ver/{$procesoVentaId}";
+
+                    $this->notificacionManager->notificarNuevaTareaPorRol([$rolIdANotificar], $mensaje, $url);
+                }
+
+                $this->jsonResponse(['status' => 'success', 'message' => 'Seguimiento guardado con éxito.'], 201);
+            } else {
+                $this->jsonResponse(['status' => 'error', 'message' => 'No se pudo guardar el seguimiento.'], 500);
+            }
         } catch (\Exception $e) {
             error_log("Error en SeguimientoApiController::addSeguimiento: " . $e->getMessage());
             $this->jsonResponse(['status' => 'error', 'message' => 'Error interno al crear el seguimiento.'], 500);

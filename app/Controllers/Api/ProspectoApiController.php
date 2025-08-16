@@ -222,7 +222,7 @@ class ProspectoApiController extends ApiController
             if (!$clienteId) throw new \Exception('No se pudo crear el registro del cliente.');
 
             // Actualizar el prospecto para enlazarlo al nuevo cliente
-            $this->prospectoModel->linkToCliente($prospectoId, $clienteId); // Necesitarás este método en ProspectoModel
+            $this->prospectoModel->linkToCliente($prospectoId, $clienteId);
 
             // Reasignar todos los procesos de venta del prospecto al nuevo cliente
             $this->procesoVentaModel->reassignProcesosToCliente($prospectoId, $clienteId);

@@ -17,6 +17,12 @@
   width: 100%;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .sidebar-toggle-btn {
   background: none;
   border: none;

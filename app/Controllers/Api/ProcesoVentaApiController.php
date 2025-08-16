@@ -5,10 +5,11 @@ namespace App\Controllers\Api;
 use App\Controllers\ApiController;
 use App\Models\DocumentoModel;
 use App\Models\FolioApartadoModel;
+use App\Models\PagoModel;
 use App\Models\ProcesoVentaModel;
 use App\Models\PropiedadModel;
 use App\Models\ProspectoModel;
-use App\Models\ValidacionPagoModel;
+use App\Models\SolicitudContratoModel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -18,8 +19,9 @@ class ProcesoVentaApiController extends ApiController
     private $prospectoModel;
     private $folioApartadoModel;
     private $documentoModel;
-    private $validacionPagoModel;
+    private $pagoModel;
     private $propiedadModel;
+    private $solicitudContratoModel;
 
     public function __construct()
     {
@@ -28,8 +30,9 @@ class ProcesoVentaApiController extends ApiController
         $this->prospectoModel = new ProspectoModel();
         $this->folioApartadoModel = new FolioApartadoModel();
         $this->documentoModel = new DocumentoModel();
-        $this->validacionPagoModel = new ValidacionPagoModel();
+        $this->pagoModel = new PagoModel();
         $this->propiedadModel = new PropiedadModel();
+        $this->solicitudContratoModel = new SolicitudContratoModel();
     }
 
     /**
@@ -236,13 +239,15 @@ class ProcesoVentaApiController extends ApiController
             $siguienteEstatusId = 4;
             $this->procesoVentaModel->updateStatus($procesoId, $siguienteEstatusId);
 
-            $validacionData = [
-                'proceso_venta_id' => $procesoId,
-                'documento_comprobante_id' => $documentoId,
-                'user_id' => $userId
+            $pagoData = [
+                'proceso_venta_id'          => $procesoId,
+                'tipo_pago_id'              => 1, // 1 = 'Apartado'
+                'monto'                     => 10000.00,
+                'documento_comprobante_id'  => $documentoId,
+                'user_id'                   => $userId
             ];
 
-            $this->validacionPagoModel->create($validacionData);
+            $this->pagoModel->create($pagoData);
 
             $this->jsonResponse(['status' => 'success', 'message' => 'Comprobante subido. Se ha enviado a validación.']);
         } catch (\Exception $e) {
@@ -295,5 +300,105 @@ class ProcesoVentaApiController extends ApiController
         $this->checkAuthAndPermissionApi('clientes.ver');
         $procesos = $this->procesoVentaModel->findAllByClienteId($clienteId);
         $this->jsonResponse(['status' => 'success', 'data' => $procesos]);
+    }
+
+    /**
+     * API: Crea una solicitud de contrato y avanza el estado del proceso de venta.
+     * @param int $procesoId
+     */
+    public function solicitarContrato(int $procesoId)
+    {
+        $this->checkAuthAndPermissionApi('contratos.solicitar');
+        $userId = $this->permissionManager->getUserId();
+
+        try {
+            // Actualizar el estado del proceso de venta al siguiente paso
+            $siguienteEstatusId = 6; // 6 = 'Solicitud de Contrato Generada'
+
+            if (!$this->procesoVentaModel->updateStatus($procesoId, $siguienteEstatusId)) {
+                throw new \Exception('No se pudo actualizar el estado del proceso de venta.');
+            }
+
+            // Crear la nueva solicitud de contrato
+            $solicitudData = [
+                'proceso_venta_id' => $procesoId,
+                'solicitado_por_usuario_id' => $userId
+            ];
+
+            $solicitudId = $this->solicitudContratoModel->create($solicitudData);
+
+            if (!$solicitudId) {
+                throw new \Exception('No se pudo crear la solicitud de contrato.');
+            }
+
+            $this->jsonResponse([
+                'status' => 'success',
+                'message' => 'Solicitud de contrato enviada con éxito. El área correspondiente ha sido notificada.'
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error al solicitar contrato: " . $e->getMessage());
+            $this->jsonResponse(['status' => 'error', 'message' => 'Error interno al procesar la solicitud.'], 500);
+        }
+    }
+
+    /**
+     * Sube un documento a un proceso y avanza su estado.
+     * @param int $procesoId
+     */
+    public function subirDocumentoYActualizarEstatus(int $procesoId)
+    {
+        $this->checkAuthAndPermissionApi('procesos_venta.update');
+        $userId = $this->permissionManager->getUserId();
+
+        // Validar datos
+        if (empty($_FILES['file'])) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'No se ha subido ningún archivo.'], 400);
+            return;
+        }
+
+        $tipoDocumentoId = filter_var($_POST['tipo_documento_id'] ?? null, FILTER_VALIDATE_INT);
+        $siguienteEstatusId = filter_var($_POST['siguiente_estatus_id'] ?? null, FILTER_VALIDATE_INT);
+
+        if (!$tipoDocumentoId || !$siguienteEstatusId) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Faltan parámetros.'], 400);
+            return;
+        }
+
+        try {
+            // Guardar el archivo y el registro del documento
+            $file = $_FILES['file'];
+
+            $storageBasePath = "contratos_firmados/{$procesoId}/";
+            $uploadDir = BASE_PATH . '/storage/app/' . $storageBasePath;
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $fileName = uniqid('contrato_firmado_') . '-' . basename($file['name']);
+            $filePath = $uploadDir . $fileName;
+
+            if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+                throw new \Exception('No se pudo mover el archivo subido.');
+            }
+
+            $storagePath = $storageBasePath . $fileName;
+
+            $docData = [
+                'proceso_venta_id' => $procesoId,
+                'tipo_documento_id' => $tipoDocumentoId,
+                'ruta_archivo' => $storagePath,
+                'nombre_archivo' => basename($file['name']),
+                'subido_por_usuario_id' => $userId,
+                'creado_por_usuario_id' => $userId
+            ];
+            $this->documentoModel->createForProceso($docData);
+
+            // Actualizar el estado del proceso de venta
+            $this->procesoVentaModel->updateStatus($procesoId, $siguienteEstatusId);
+            $this->jsonResponse(['status' => 'success', 'message' => 'Documento subido y proceso actualizado con éxito.']);
+        } catch (\Exception $e) {
+            $this->jsonResponse(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 }

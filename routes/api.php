@@ -7,7 +7,9 @@ use App\Controllers\Api\AuthApiController;
 use App\Controllers\Api\CarteraApiController;
 use App\Controllers\Api\CatalogoApiController;
 use App\Controllers\Api\ClienteApiController;
+use App\Controllers\Api\DashboardApiController;
 use App\Controllers\Api\DocumentoApiController;
+use App\Controllers\Api\NotificacionApiController;
 use App\Controllers\Api\PermisoApiController;
 use App\Controllers\Api\ProcesoVentaApiController;
 use App\Controllers\Api\PropiedadApiController;
@@ -15,9 +17,12 @@ use App\Controllers\Api\PropiedadRevisionApiController;
 use App\Controllers\Api\ProspectoApiController;
 use App\Controllers\Api\RolApiController;
 use App\Controllers\Api\SeguimientoApiController;
+use App\Controllers\Api\SolicitudContratoApiController;
 use App\Controllers\Api\SucursalApiController;
 use App\Controllers\Api\UsuarioApiController;
 use App\Controllers\Api\UploadApiController;
+use App\Controllers\Api\ValidacionContratoApiController;
+use App\Controllers\Api\ValidacionPagoApiController;
 
 /**
  * Define las rutas de la API de la aplicación.
@@ -36,6 +41,9 @@ return function (RouteCollector $api) {
     $api->addRoute('DELETE', '/usuarios/{id:\d+}', [UsuarioApiController::class, 'destroy']);
     $api->addRoute('GET', '/usuarios/simple-list', [UsuarioApiController::class, 'apiGetSimpleList']);
 
+    // --- API de Dashboard ---
+    $api->addRoute('GET', '/dashboard-data', [DashboardApiController::class, 'getData']);
+
     // --- API de Sucursales ---
     $api->addRoute('GET', '/sucursales', [SucursalApiController::class, 'index']);
     $api->addRoute('POST', '/sucursales', [SucursalApiController::class, 'store']);
@@ -53,6 +61,21 @@ return function (RouteCollector $api) {
     $api->addRoute('GET', '/validacion-cartera/{id:\d+}', [PropiedadRevisionApiController::class, 'apiGetById']);
     $api->addRoute('PUT', '/validacion-cartera/{id:\d+}', [PropiedadRevisionApiController::class, 'apiUpdate']);
     $api->addRoute('POST', '/validacion-cartera/{id:\d+}/fotos', [PropiedadRevisionApiController::class, 'uploadFotos']);
+
+    // --- API de Validaciones de Pagos ---
+    $api->addRoute('GET', '/validaciones-pagos', [ValidacionPagoApiController::class, 'index']);
+    $api->addRoute('POST', '/validaciones-pagos/{id:\d+}/aprobar', [ValidacionPagoApiController::class, 'approve']);
+    $api->addRoute('POST', '/validaciones-pagos/{id:\d+}/rechazar', [ValidacionPagoApiController::class, 'reject']);
+
+    // --- API de Solicitudes de contratos ---
+    $api->addRoute('GET', '/solicitudes-contrato', [SolicitudContratoApiController::class, 'index']);
+    $api->addRoute('POST', '/solicitudes-contrato/{id:\d+}/asignar', [SolicitudContratoApiController::class, 'asignar']);
+    $api->addRoute('GET', '/solicitudes-contratos/{id:\d+}', [SolicitudContratoApiController::class, 'show']);
+    $api->addRoute('POST', '/solicitudes-contrato/{id:\d+}/subir-contrato', [SolicitudContratoApiController::class, 'uploadContract']);
+
+    // --- API de Validaciones de Contratos ---
+    $api->addRoute('GET', '/validaciones-contratos', [ValidacionContratoApiController::class, 'index']);
+    $api->addRoute('POST', '/validaciones-contrato/{id:\d+}/aprobar', [ValidacionContratoApiController::class, 'approve']);
 
     // --- API de Carteras ---
     $api->addRoute('POST', '/carteras/upload', [CarteraApiController::class, 'apiUploadCartera']);
@@ -96,6 +119,9 @@ return function (RouteCollector $api) {
     // --- API de Comprobante de apartado ---
     $api->addRoute('POST', '/procesos-venta/{id}/subir-comprobante', [ProcesoVentaApiController::class, 'subirComprobante']);
 
+    $api->addRoute('POST', '/procesos-venta/{id}/solicitar-contrato', [ProcesoVentaApiController::class, 'solicitarContrato']);
+    $api->addRoute('POST', '/procesos-venta/{id}/subir-documento', [ProcesoVentaApiController::class, 'subirDocumentoYActualizarEstatus']);
+
     // --- API de Clientes ---
     $api->addRoute('GET', '/clientes', [ClienteApiController::class, 'index']);
     $api->addRoute('GET', '/clientes/{id:\d+}', [ClienteApiController::class, 'show']);
@@ -128,7 +154,12 @@ return function (RouteCollector $api) {
     $api->addRoute('GET', '/catalogos/estatus-global-prospecto', [CatalogoApiController::class, 'apiGetAllEstatusGlobalProspecto']);
     $api->addRoute('GET', '/catalogos/administradoras', [CatalogoApiController::class, 'apiGetAdministradoras']);
     $api->addRoute('GET', '/catalogos/roles', [CatalogoApiController::class, 'apiGetRoles']);
+    $api->addRoute('GET', '/catalogos/resultados-seguimiento', [CatalogoApiController::class, 'apiGetResultadosSeguimiento']);
 
     // --- API para Subidas de Archivos ---
     $api->addRoute('POST', '/uploads/temp-photo', [UploadApiController::class, 'handleTempUpload']);
+
+    // --- API para Notificaciones ---
+    $api->addRoute('GET', '/notificaciones', [NotificacionApiController::class, 'index']);
+    $api->addRoute('POST', '/notificaciones/{id:\d+}/marcar-leida', [NotificacionApiController::class, 'markAsRead']);
 };

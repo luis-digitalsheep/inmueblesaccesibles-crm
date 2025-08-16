@@ -6,11 +6,13 @@ use App\Services\Database\Database;
 use PDO;
 use PDOException;
 
-class PermissionManager {
+class PermissionManager
+{
   private $db;
   private static $instance = null;
 
-  private function __construct() {
+  private function __construct()
+  {
     $this->db = Database::getInstance()->getConnection();
   }
 
@@ -18,7 +20,8 @@ class PermissionManager {
    * Obtiene la única instancia de PermissionManager (Singleton).
    * @return PermissionManager
    */
-  public static function getInstance(): PermissionManager {
+  public static function getInstance(): PermissionManager
+  {
     if (self::$instance === null) {
       self::$instance = new PermissionManager();
     }
@@ -33,7 +36,8 @@ class PermissionManager {
    * @param int $rolId El ID del rol del usuario.
    * @return bool True si los permisos se cargaron con éxito, false en caso contrario.
    */
-  public function loadUserPermissions(int $userId): bool {
+  public function loadUserPermissions(int $userId): bool
+  {
     try {
       $userStmt = $this->db->prepare("SELECT id, nombre, email, rol_id, sucursal_id FROM usuarios WHERE id = :user_id LIMIT 1");
       $userStmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
@@ -48,7 +52,7 @@ class PermissionManager {
         unset($_SESSION['rol_id']);
         unset($_SESSION['sucursal_id']);
         unset($_SESSION['nombre_usuario']);
-        
+
         return false;
       }
 
@@ -91,7 +95,8 @@ class PermissionManager {
    * @param string $permissionName El nombre del permiso a verificar (ej. 'propiedades.crear').
    * @return bool True si el usuario tiene el permiso, false en caso contrario.
    */
-  public function hasPermission(string $permissionName): bool {
+  public function hasPermission(string $permissionName): bool
+  {
     if (!isset($_SESSION['user_permissions']) || !isset($_SESSION['user_id'])) {
       return false;
     }
@@ -103,7 +108,8 @@ class PermissionManager {
    * Devuelve todos los permisos del usuario actual en un array de strings.
    * @return array Un array de strings con los nombres de los permisos.
    */
-  public function getUserPermissions(): array {
+  public function getUserPermissions(): array
+  {
     return $_SESSION['user_permissions'] ?? [];
   }
 
@@ -111,7 +117,8 @@ class PermissionManager {
    * Devuelve el ID del usuario actual en sesión.
    * @return int|null El ID del usuario o null si no hay sesión.
    */
-  public function getUserId(): ?int {
+  public function getUserId(): ?int
+  {
     return $_SESSION['user_id'] ?? null;
   }
 
@@ -119,7 +126,8 @@ class PermissionManager {
    * Devuelve el ID del rol del usuario actual en sesión.
    * @return int|null El ID del rol o null si no hay sesión.
    */
-  public function getRolId(): ?int {
+  public function getRolId(): ?int
+  {
     return $_SESSION['rol_id'] ?? null;
   }
 
@@ -127,7 +135,8 @@ class PermissionManager {
    * Devuelve el ID de la sucursal del usuario actual en sesión.
    * @return int|null El ID de la sucursal o null si no hay sesión.
    */
-  public function getSucursalId(): ?int {
+  public function getSucursalId(): ?int
+  {
     return $_SESSION['sucursal_id'] ?? null;
   }
 
@@ -135,7 +144,8 @@ class PermissionManager {
    * Devuelve el nombre del usuario actual en sesión.
    * @return string|null El nombre del usuario o null si no hay sesión.
    */
-  public function getUserName(): ?string {
+  public function getUserName(): ?string
+  {
     return $_SESSION['nombre_usuario'] ?? null;
-  }
+  }  
 }

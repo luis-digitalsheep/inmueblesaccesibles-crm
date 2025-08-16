@@ -26,7 +26,7 @@ class ClienteModel
         $sql = "INSERT INTO {$this->tableName} 
                     (nombre_completo, celular, email, usuario_responsable_id, sucursal_id, prospecto_origen_id, creado_por_usuario_id, actualizado_por_usuario_id) 
                 VALUES 
-                    (:nombre, :celular, :email, :usuario_responsable_id, :sucursal_id, :prospecto_origen_id, :user_id, :user_id)";
+                    (:nombre, :celular, :email, :usuario_responsable_id, :sucursal_id, :prospecto_origen_id, :creado_por_usuario, :actualizado_por_usuario)";
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -37,11 +37,13 @@ class ClienteModel
             $stmt->bindParam(':usuario_responsable_id', $prospectoData['usuario_responsable_id'], PDO::PARAM_INT);
             $stmt->bindParam(':sucursal_id', $prospectoData['sucursal_id'], PDO::PARAM_INT);
             $stmt->bindParam(':prospecto_origen_id', $prospectoData['id'], PDO::PARAM_INT);
-            $stmt->bindParam(':user_id', $prospectoData['user_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':creado_por_usuario', $prospectoData['user_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':actualizado_por_usuario', $prospectoData['user_id'], PDO::PARAM_INT);
 
             if ($stmt->execute()) {
                 return (int)$this->db->lastInsertId();
             }
+            
             return false;
         } catch (PDOException $e) {
             error_log("Error en ClienteModel::createFromProspecto: " . $e->getMessage());
