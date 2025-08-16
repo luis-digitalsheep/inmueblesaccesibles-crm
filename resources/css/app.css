@@ -25,6 +25,8 @@
 @import "components/_sidebar.css";
 @import "components/_tables.css";
 @import "components/_tabs.css";
+@import "components/_notifications.css";
+@import "components/_dashboard-widgets.css";
 
 /* Pages */
 @import "pages/_login.css";

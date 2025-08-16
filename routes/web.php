@@ -18,6 +18,9 @@ use App\Controllers\Web\PermisoController;
 use App\Controllers\Web\RolController;
 use App\Controllers\Web\SucursalController;
 use App\Controllers\Web\UsuarioController;
+use App\Controllers\Web\ValidacionPagoController;
+use App\Controllers\Web\SolicitudContratoController;
+use App\Controllers\Web\ValidacionContratoController;
 
 /**
  * Define las rutas web (de navegación) de la aplicación.
@@ -49,11 +52,11 @@ return function (RouteCollector $r) {
     $r->addRoute('GET', '/validaciones-cartera', [PropiedadRevisionController::class, 'index']);
     $r->addRoute('GET', '/validacion-cartera/validar/{id:\d+}', [PropiedadRevisionController::class, 'edit']);
 
-    $r->addRoute('GET', '/validaciones-pagos', [TestController::class, 'index']);
+    $r->addRoute('GET', '/validaciones-pagos', [ValidacionPagoController::class, 'index']);
 
-    $r->addRoute('GET', '/solicitudes-contratos', [TestController::class, 'index']);
+    $r->addRoute('GET', '/solicitudes-contratos', [SolicitudContratoController::class, 'index']);
 
-    $r->addRoute('GET', '/validaciones-contratos', [TestController::class, 'index']);
+    $r->addRoute('GET', '/validaciones-contratos', [ValidacionContratoController::class, 'index']);
 
     $r->addRoute('GET', '/folios', [TestController::class, 'index']);
     $r->addRoute('GET', '/folios-apartado/descargar/{id:\d+}', [FolioApartadoController::class, 'descargar']);

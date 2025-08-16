@@ -230,8 +230,8 @@ function renderDocumentosTab(documentos) {
                     <td><span class="status-badge status-retirada">${doc.tipo_documento_nombre}</span></td>
                     <td>${new Date(doc.created_at).toLocaleDateString('es-MX')}</td>
                     <td class="actions-column">
-                        <a href="/documentos/descargar/${doc.id}" target="_blank" class="btn btn-sm btn-secondary" title="Ver Documento">Ver</a>
-                        <button class="btn btn-sm btn-danger btn-delete-doc" data-doc-id="${doc.id}" title="Eliminar">Eliminar</button>
+                        <a href="/documentos/descargar/${doc.id}" target="_blank" class="btn btn-sm btn-secondary" title="Ver Documento"><i class="fas fa-eye"></i> Ver</a>
+                        <button class="btn btn-sm btn-danger btn-delete-doc" data-doc-id="${doc.id}" title="Eliminar"><i class="fas fa-trash only-icon"></i></button>
                     </td>
                 </tr>
             `;

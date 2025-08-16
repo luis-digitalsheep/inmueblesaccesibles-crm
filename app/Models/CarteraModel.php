@@ -101,8 +101,6 @@ class CarteraModel
         }
     }
 
-    public function fileLoad() {}
-
     /**
      * Busca o crea una cartera por su código.
      *

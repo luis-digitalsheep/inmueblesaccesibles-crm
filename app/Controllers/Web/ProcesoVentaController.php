@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers\Web;
 
 use App\Controllers\WebController;
@@ -51,6 +52,14 @@ class ProcesoVentaController extends WebController
                 'canManageWorkflow' => $this->permissionManager->hasPermission('procesos_venta.workflow.gestionar'),
             ]
         ];
+
+        if (!empty($proceso['cliente_id'])) {
+            $data['back_url'] = "/clientes/ver/" . $proceso['cliente_id'];
+            $data['back_label'] = "Volver al Cliente";
+        } else {
+            $data['back_url'] = "/prospectos/ver/" . $proceso['prospecto_id'];
+            $data['back_label'] = "Volver al Prospecto";
+        }
 
         $this->render('procesosVenta/show', $data, $currentRoute);
     }

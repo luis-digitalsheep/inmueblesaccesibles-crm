@@ -4,7 +4,9 @@
         <p id="pageDescription" class="page-description">Gestiona el seguimiento y avance de esta oportunidad.</p>
     </div>
     <div class="page-actions">
-        <a id="back-to-prospect-link" href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver al Prospecto</a>
+        <a href="<?php echo htmlspecialchars($back_url); ?>" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> <?php echo htmlspecialchars($back_label); ?>
+        </a>
     </div>
 </div>
 

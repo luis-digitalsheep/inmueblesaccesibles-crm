@@ -145,6 +145,35 @@ class UsuarioModel
   }
 
   /**
+   * Busca todos los usuarios activos que pertenecen a una lista de roles.
+   * @param array $rolIds Un array de IDs de roles (ej. [2, 3]).
+   * @return array Un array de usuarios (id, nombre, email).
+   */
+  public function findByRoles(array $rolIds): array
+  {
+    if (empty($rolIds)) {
+      return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($rolIds), '?'));
+
+    $sql = "SELECT id, nombre, email 
+                FROM {$this->tableName} 
+                WHERE activo = 1 AND rol_id IN ($placeholders)";
+
+    try {
+      $stmt = $this->db->prepare($sql);
+
+      $stmt->execute($rolIds);
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en UsuarioModel::findByRoles: " . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
    * Verifica una contraseña en texto plano contra un hash de contraseña almacenado.
    * Es crucial que el hash almacenado haya sido generado previamente con password_hash().
    *

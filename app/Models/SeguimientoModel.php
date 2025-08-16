@@ -24,9 +24,9 @@ class SeguimientoModel
     public function create(array $data)
     {
         $sql = "INSERT INTO {$this->tableName} 
-                (proceso_venta_id, tipo_interaccion, fecha_interaccion, usuario_registra_id, comentarios) 
+                (proceso_venta_id, tipo_interaccion, fecha_interaccion, usuario_registra_id, comentarios, resultado) 
             VALUES 
-                (:proceso_venta_id, :tipo_interaccion, :fecha_interaccion, :usuario_registra_id, :comentarios)
+                (:proceso_venta_id, :tipo_interaccion, :fecha_interaccion, :usuario_registra_id, :comentarios, :resultado)
         ";
 
         try {
@@ -39,6 +39,7 @@ class SeguimientoModel
             $stmt->bindParam(':fecha_interaccion', $fechaActual);
             $stmt->bindParam(':usuario_registra_id', $data['usuario_registra_id'], PDO::PARAM_INT);
             $stmt->bindParam(':comentarios', $data['comentarios']);
+            $stmt->bindParam(':resultado', $data['resultado']);
 
             if ($stmt->execute()) {
                 return (int)$this->db->lastInsertId();
